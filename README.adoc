@@ -1,0 +1,7 @@
+W większości katalogów z ćwiczeniami powinien być podkatalog `BuildScript` ze skryptem do budowania (napisanym w BullsEye). Jeśli chcesz uruchomić budowanie i uruchomienie testów, wejdź do tego katalogu i wykonaj polecenie:
+
+```
+dotnet run -c Release
+```
+
+W każdym z podkatalogów powinien być jeden bądź więcej plików README.adoc. Czasami jest jedno README dla całego modułu i dodatkowe README dla konkretnych przykładów.
