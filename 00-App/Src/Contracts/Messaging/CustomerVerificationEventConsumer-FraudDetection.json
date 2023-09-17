@@ -1,0 +1,40 @@
+{
+  "consumer": {
+    "name": "CustomerVerificationEventConsumer"
+  },
+  "messages": [
+    {
+      "contents": [
+        {
+          "Person": {
+            "DateOfBirth": "1980-01-01",
+            "Gender": "Male",
+            "Name": "Fraudeusz",
+            "NationalIdentificationNumber": "2345678901",
+            "Surname": "Fraudowski"
+          },
+          "Result": {
+            "Status": 1,
+            "UserId": "cc8aa8ff-40ff-426f-bc71-5bb7ea644108"
+          }
+        }
+      ],
+      "description": "should produce a fraud found event",
+      "metadata": {
+        "contentType": "application/json"
+      }
+    }
+  ],
+  "metadata": {
+    "pactRust": {
+      "ffi": "0.2.2",
+      "models": "0.2.7"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "FraudDetection"
+  }
+}

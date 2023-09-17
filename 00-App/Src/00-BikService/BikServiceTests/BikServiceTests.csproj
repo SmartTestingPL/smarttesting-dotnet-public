@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AtmaFileSystem" Version="5.0.0" />
+    <PackageReference Include="DotNet.Testcontainers" Version="1.6.0-beta.2104" />
+    <PackageReference Include="Extensions.Logging.NUnit" Version="1.0.1" />
+    <PackageReference Include="FluentAssertions" Version="6.5.1" />
+    <PackageReference Include="Flurl.Http" Version="3.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
+    <PackageReference Include="NSubstitute" Version="4.3.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="PactNet" Version="4.0.0-beta.3" />
+    <PackageReference Include="Testcontainers.MongoDb" Version="3.3.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="3.3.0" />
+    <PackageReference Include="Testcontainers.RabbitMq" Version="3.3.0" />
+    <PackageReference Include="TngTech.ArchUnitNET.NUnit" Version="0.9.0" />
+    <PackageReference Include="WireMock.Net" Version="1.4.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BikService\BikService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="../../Contracts/**/*.*">
+      <Link>Contracts/%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="..\..\Contracts\Messaging\shouldProduceAScoreCalculatedEvent.yml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="..\..\Contracts\Http\FraudDetection-BikService.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,82 @@
+{
+  "consumer": {
+    "name": "FraudDetection"
+  },
+  "interactions": [
+    {
+      "description": "Should return VerificationFailed for fraud",
+      "request": {
+        "method": "GET",
+        "path": "/00262161334"
+      },
+      "response": {
+        "body": {
+          "status": "VerificationFailed",
+          "userId": "cc8aa8ff-40ff-426f-bc71-5bb7ea644108"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.userId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 403
+      }
+    },
+    {
+      "description": "Should return VerificationPassed for non-fraud",
+      "request": {
+        "method": "GET",
+        "path": "/89050193724"
+      },
+      "response": {
+        "body": {
+          "status": "VerificationPassed",
+          "userId": "5cd495e7-9a66-4c4b-bba2-8d15cc8d9e68"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "matchingRules": {
+          "body": {
+            "$.userId": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"
+                }
+              ]
+            }
+          },
+          "header": {}
+        },
+        "status": 200
+      }
+    }
+  ],
+  "metadata": {
+    "pactRust": {
+      "ffi": "0.2.2",
+      "mockserver": "0.8.7",
+      "models": "0.2.7"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "BikService"
+  }
+}

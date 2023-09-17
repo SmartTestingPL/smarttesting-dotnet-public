@@ -1,0 +1,115 @@
+version: '3.1'
+
+services:
+  # infrastructure
+  postgres-bik:
+    image: postgres:15.4
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+  postgres-fraud:
+    image: postgres:15.4
+    ports:
+      - 5433:5433
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    command: -p 5433
+  rabbitmq:
+    image: rabbitmq:3.12.2-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 27017:27017
+  income-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 1234:1234
+    volumes:
+      - ./income-wiremock/:/home/wiremock
+    command: --port 1234
+  personal-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 2345:2345
+    volumes:
+      - ./personal-wiremock/:/home/wiremock
+    command: --port 2345
+  monthly-cost-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 3456:3456
+    volumes:
+      - ./monthly-cost-wiremock/:/home/wiremock
+    command: --port 3456
+  social-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 4567:4567
+    volumes:
+      - ./social-wiremock/:/home/wiremock
+    command: --port 4567
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+  wait-for-postgres-bik:
+    image: willwill/wait-for-it
+    command: ["postgres-bik:5432", "-s", "--", "echo",  "DB UP"]
+  wait-for-postgres-fraud:
+    image: willwill/wait-for-it
+    command: ["postgres-fraud:5433", "-s", "--", "echo",  "DB UP"]
+  wait-for-rabbitmq:
+    image: willwill/wait-for-it
+    command: ["rabbitmq:5672", "-s", "--", "echo",  "BROKER UP"]
+  # applications
+  bik-service:
+    image: bikservice:latest
+    ports:
+      - 7654:80
+    depends_on:
+      - social-wiremock
+      - personal-wiremock
+      - monthly-cost-wiremock
+      - income-wiremock
+      - rabbitmq
+      - postgres-bik
+      - mongo
+      - zipkin
+    restart: on-failure
+    environment:
+      SocialService__BaseUrl: http://social-wiremock:4567
+      PersonalService__BaseUrl: http://personal-wiremock:2345
+      MonthlyCostService__BaseUrl: http://monthly-cost-wiremock:3456
+      IncomeService__BaseUrl: http://income-wiremock:1234
+      RabbitMq__ConnectionString: amqp://guest:guest@rabbitmq:5672
+      OccupationRepository__ConnectionString: Host=postgres-bik;Port=5432;Database=test;User Id=test;Password=test;
+      CreditDb__ConnectionString: mongodb://root:example@mongo:27017
+      Zipkin__Host: zipkin
+  
+  fraud-detection:
+    image: frauddetection:latest
+    ports:
+      - 8765:80
+    depends_on:
+      - postgres-fraud
+      - rabbitmq
+      - bik-service
+      - zipkin
+    restart: on-failure
+    environment:
+      BikServiceOptions__BaseUrl: http://bik-service:80
+      RabbitMqOptions__ConnectionString: amqp://guest:guest@rabbitmq:5672
+      PostgreSqlOptions__ConnectionString: Host=postgres-fraud;Port=5433;Database=test;User Id=test;Password=test;
+      Zipkin__Host: zipkin
+
