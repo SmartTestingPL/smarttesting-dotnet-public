@@ -1,0 +1,116 @@
+= FRAUD-DETECTION
+
+== Wymagania biznesowe
+
+Weryfikujemy czy dla danego PESELu osoba jest oszustem czy nie. Sprawdzamy czy nie mamy takiej informacji w bazie danych, a jeśli nie to uruchamiamy weryfikacje oraz odpytujemy bazę BIK.
+
+== Strategia testowania
+
+Kod zawiera przykłady testów ze wszystkich możliwych poziomów. Nie oznacza to, że każdy możliwy przypadek testowy został rzeczywiście przetestowany. Sugerujemy uczestnikom szkolenia najpierw spróbować napisać testy we własnym zakresie, a istniejące testy traktować jako punkt odniesienia.
+
+**Integracyjne** dla końcówek HTTP i messaging (brak kontraktów dla listenera + klientów http, ponieważ nie mamy dostępu do usług zewnętrznych), ale z **usługami uruchomionymi w kontenerze**. W przypadku używania cachea dopiszemy testy z cachem.
+
+**Testy kontraktowe** dla kontrollera HTTP i messagingu. Proponujemy podpięcie RESTDocs żeby wygenerować **dokumentację** (w innych językach proponujemy ją jakkolwiek opisać np. poprzez Swaggera).
+
+**Testy architektury** - kod z przestrzeni nazw nie powinien wołać kodu z innej przestrzeni (`Infrastructure` nie powinien wołać `Personal` i odwrotnie). Jeśli tak jest to należy wydzielić osobny moduł, który będzie współdzielony.
+
+**Chaos testing** - wymagania:
+
+```
+ Hipoteza stanu ustalonego
+     POST na URL “fraud/{fraudCheck}”, z peselem osoby nie będącej oszustem, odpowie statusem 401, w ciągu 2000 ms
+ Metoda
+     Włączamy błędy spowodowane integracją z klasą CustomerVerifier
+ Wycofanie
+     Wyłączamy błędy spowodowane integracją z klasą CustomerVerifier
+```
+
+Przy testach musimy inwalidować cache!
+
+**Podpięty sonarqube** i **editorconfig**.
+
+**Dev mode** musi być przygotowany w taki sposób, że można lokalnie uruchomić aplikację bez infrastruktury.
+
+**Testy end to end** zaczynające się od Fraud Verifiera i przechodzące przez BIK Service.
+
+**Testy wydajności** na przykładzie JMeter z dwiema aplikacjami.
+
+== Błędy w kodzie produkcyjnym
+
+Implementacja zawiera błędy, które testy powinny wychwycić (powodzenia w ich szukaniu!).
+
+== Uruchomienie Prometheusa i Grafany
+
+Wartości dodanych przez siebie metryk możesz agregować w Prometheusie i tworzyć dla nich dashboardy w Grafanie. Stworzyliśmy do tego celu demo setup do uruchomienia na dockerze.
+
+Przed rozpoczęciem 
+
+1) Zbuduj dockery obu aplikacji (można to zrobić klikając z poziomu Visual Studio prawym przyciskiem myszy na plik Dockerfile i wybierając Build Docker Image)
+
+2) Uruchom środowisko E2E
+
+```
+cd 00-App/Src/00-FraudDetection/FraudDetectionTests/Docker
+docker compose -f .\docker-compose-e2e.yml up
+```
+
+
+Wykonaj trochę zapytań do aplikacji FraudDetection korzystając ze skryptów `00-App/Src/00-FraudDetection/json/Fraud.ps1` i `00-App/Src/00-FraudDetection/json/Fraud.ps1/Positive.ps1` (możesz podmienić kilka razy Guid w plikach `00-app/00-fraud-detection/src/json/fraud.json` i `00-app/00-fraud-detection/src/json/positive.json` żeby wykonać więcej weryfikacji - jeżeli Guid jest ten sam, wyciągana jest wartość z bazy danych zamiast przeprowadzania nowej weryfikacji).
+
+Następnie:
+
+1) Sklonuj repozytorium z setupem docker-compose:
+
+```
+git clone git@github.com:OlgaMaciaszek/prometheus.git
+```
+
+Bądź, jeśli powyższe nie zadziała, to:
+
+```
+git clone https://github.com/OlgaMaciaszek/prometheus.git
+```
+
+2) Przejdź na gałąź `smarttesting`
+
+```
+cd prometheus
+git checkout smarttesting
+```
+
+3) (Procedura dla Windowsa 10 z dockerem na WSL2. Jeśli używasz opartych na Linuksie, spróbuj dostosować wersję tego kroku z Javowej wersji kodu).
+
+Zmień plik `./prometheus/prometheus.yml`, podmieniając istniejącą tam sekcję `scrape_configs` na nastepującą:
+
+```
+scrape_configs:
+  - job_name: 'apps'
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    static_configs  :
+      - targets: ['host.docker.internal:7654','host.docker.internal:8765']
+```
+
+4) Uruchom kontenery:
+
+```
+docker-compose up
+```
+
+5) W przeglądarce uruchom Prometheusa pod `localhost:9090`. Możesz przeglądać metryki i tworzyć do nich grafy.
+
+6) W przeglądarce Grafanę pod `localhost:3000` (użytkownik: `admin`, hasło: `foobar`). Na stronie `localhost:3000/dashboards` znajdziesz linki do przykładowych dashboardów. Wykorzystaj dashboard `FraudDetection` do wykonania zadań związanych z KPI i metrykami (poniżej). UWAGA: może się okazać, że będzie potrzeba zmienić troszkę nazwy metryki na dashboardach (zauważyłem że w bibliotece C# odrobinę różni się raportowanie od Javy)! Zawsze patrz w poszczególne endpointy `/metrics` żeby sprawdzić jakie faktycznie sa nazwy metryk!
+
+Niektóre metryki systemowe z naszych aplikacji będą dostępne tylko, kiedy zostaną uruchomione pod Linuksem (WSL2 też powinien zadziałać) - zerknij na opis poszczególnych metryk systemowych pod adresem https://github.com/Daniel15/prometheus-net.SystemMetrics.
+
+Możesz tworzyć dashboardy dla dodanych przez siebie metryk.
+
+== KPI
+// Dodaliśmy metrykę typu `Timer` o nazwie` customer_verification` i wykres `Mean Verification time` w Grafanie; TODO: dodaj więcej KPI
+* Średni czas trwania weryfikacji poniżej X
+
+== Metryki
+// Dodaliśmy metryki typu `Counter`, nazywające się `fraudcheck_results_failure` i `fraudcheck_results_success`; TODO: wykorzystaj je do utworzenia w grafanie wykresu, który pozwoli Ci monitorować wymaganie poniżej:
+* Status odpowiedzi FraudController (z ostatnich 5 minut oczekujemy 95% nie fraudów)
+// TODO: dodaj metrykę w kodzie i wykres w Grafanie:
+* Liczba klientów na minutę

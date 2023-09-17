@@ -1,0 +1,60 @@
+version: '3.1'
+
+services:
+  postgres:
+    image: postgres:15.4
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+  rabbitmq:
+    image: rabbitmq:3.12.2-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 27017:27017
+  income-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 1234:1234
+    volumes:
+      - ./income-wiremock/:/home/wiremock
+    command: --port 1234
+  personal-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 2345:2345
+    volumes:
+      - ./personal-wiremock/:/home/wiremock
+    command: --port 2345
+  monthly-cost-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 3456:3456
+    volumes:
+      - ./monthly-cost-wiremock/:/home/wiremock
+    command: --port 3456
+  social-wiremock:
+    image: wiremock/wiremock:2.32.0
+    ports:
+      - 4567:4567
+    volumes:
+      - ./social-wiremock/:/home/wiremock
+    command: --port 4567
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+  sonarqube:
+    image: sonarqube:lts
+    ports:
+      - 9500:9000
+

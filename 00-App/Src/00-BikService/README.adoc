@@ -1,0 +1,309 @@
+= BIK-SERVICE
+
+== Wymagania biznesowe
+
+Ważnymi biznesowo metrykami dla nas są statystyki wokół punktacji otrzymanej przy weryfikacji klienta.
+
+=== Jak wyliczymy zdolność kredytową?
+
+Wejściem do aplikacji jest kontroller HTTP.
+
+Aplikacja łączy się z różnymi "usługami zewnętrznymi" (nie mamy dostępu do ich kodu źródłowego) w celu wyliczenia poszczególnych punktacji (Score).Suma punktacji (im wyższa, tym lepiej) określa czy dana osoba jest oszustem czy nie.
+
+Zdolność kredytowa liczona jest poprzez zsumowanie punktów wyliczonych na podstawie miesięcznego dochodu, miesięcznych kosztów, danych związanych z informacją kredytową, danych związanych z sytuacją społeczną i danych związanych z sytuacją osobistą klienta.
+
+==== Obliczanie punktów za dochód miesięczny
+
+* Miesięczny dochód pomiędzy 0 a 500 włącznie -> 0 punktów
+* Miesięczny dochód pomiędzy 501 a 1500 włącznie -> 10 punktów
+* Miesięczny dochód pomiędzy 1501 a 3500 włącznie -> 20 punktów
+* Miesięczny dochód pomiędzy 3501 a 5500 włącznie -> 30 punktów
+* Miesięczny dochód pomiędzy 5501 a 10000 włącznie -> 40 punktów
+* Miesięczny dochód powyżej 10000 -> 50 punktów
+* Miesięczny dochód ujemny -> 0 punktów
+
+==== Obliczanie punktów za miesięczne wydatki
+
+* Miesięczne wydatki pomiędzy 0 a 500 włącznie -> 50 punktów
+* Miesięczne wydatki pomiędzy 501 a 1500 włącznie -> 40 punktów
+* Miesięczne wydatki pomiędzy 1501 a 3500 włącznie -> 30 punktów
+* Miesięczne wydatki pomiędzy 3501 a 5500 włącznie -> 20 punktów
+* Miesięczne wydatki pomiędzy 5501 a 10000 włącznie -> 10 punktów
+* Miesięczne wydatki powyżej 10000 -> 0 punktów
+* Miesięczne wydatki ujemne -> 0 punktów
+
+==== Obliczanie punktów za informację kredytową
+
+Jeżeli informacja o aktualnym zadłużeniu nie zostanie zwrócona, przyznane jest 0 punktów. W przeciwnym wypdaku, punktacja stanowi sumę punktów wyliczonych dla aktualnego zadłużenia, kosztów utrzymania kredytobiorcy i jego rodziny i historii kredytowej.
+
+==== Obliczanie punktów za aktualne zadłużenie
+
+* Aktualne zadłużenie od 0 do 499 włącznie -> 50 punktów
+* Aktualne zadłużenie od 500 do 1500 włącznie -> 40 punktów
+* Aktualne zadłużenie od 1501 do 3500 włącznie -> 20 punktów
+* Aktualne zadłużenie od 3501 do 5500 włącznie -> 10 punktów
+* Aktualne zadłużenie powyżej 5500 -> 0 punktów
+* Aktualne zadłużenie ujemne -> 0 punktów
+* Brak danych dotyczących aktualnego zadłużenia -> 0 punktów
+
+==== Obliczanie punktów za koszty utrzymania kredytobiorcy i jego rodziny
+
+* Koszty utrzymania powyżej 6500 -> 0 punktów
+* Koszty utrzymania od 4501 do 6500 -> 10 punktów
+* Koszty utrzymania od 2501 do 4500 -> 20 punktów
+* Koszty utrzymania od 1000 do 2500 -> 40 punktów
+* Koszty utrzymania poniżej 1000 -> 50 punktów
+* Koszty utrzymania ujemne -> 0 punktów
+* Brak danych dotyczących kosztów utrzymania -> 0 punktów
+
+==== Obliczanie punktów za historię kredytową
+
+* Klient bez żadnej spłaconej raty -> 0 punktów
+* Klient z wieloma niespłaconymi ratami -> 10 punktów
+* Klient z kilkoma niespłaconymi ratami -> 30 punktów
+* Klient bez żadnej niespłaconej raty -> 50 punktów
+* Brak danych dotyczących historii kredytowej -> 0 punktów
+
+IMPORTANT: Jeśli dana weryfikacja wywala się z powodu technicznego powinniśmy założyć punktację 0 !!!
+
+==== Obliczanie punktów za sytuację społeczną
+
+Jeżeli informacja o sytuacji społecznej nie zostanie zwrócona, przyznane jest 0 punktów. W przeciwnym wypdaku, punktacja stanowi sumę punktów wyliczonych dla liczby osób na utrzymaniu kredytobiorcy, liczby domowników, stanu cywilnego i rodzaju zatrudnienia.
+
+==== Obliczanie punktów za liczbę osób na utrzymaniu kredytobiorcy
+
+* 0 osób na utrzymaniu -> 50 punktów
+* 1 osoba na utrzymaniu -> 40 punktów
+* 2 osoby na utrzymaniu -> 30 punktów
+* 3 osoby na utrzymaniu -> 20 punktów
+* 4 osoby na utrzymaniu -> 10 punktów
+* Ponad 4 osoby na utrzymaniu -> 0 punktów
+* Ujemna liczba osób na utrzymaniu -> 0 punktów
+
+==== Obliczanie punktów za liczbę domowników
+
+* 1 domownik -> 50 punktów
+* 2 domowników -> 40 punktów
+* 3 domowników -> 30 punktów
+* 4 domowników -> 20 punktów
+* 5 domowników -> 10 punktów
+* Powyżej 5 domowników -> 0 punktów
+* Ujemna liczba domowników -> 0 punktów
+
+IMPORTANT: Liczba domowników musi być co najmniej o 1 wyższa od liczby osób na utrzymaniu.
+W przeciwnym wypadku proces obliczania zdolności kredytowej powinien skończyć się błędem.
+
+==== Obliczanie punktów za stan cywilny
+
+* Kawaler/ panna -> 20 punktów
+* Osoba w związku małżeńskim -> 10 punktów
+* Brak danych dotyczących stanu cywilnego -> 0 punktów
+
+==== Obliczanie punktów za rodzaj zatrudnienia
+
+* Umowa o pracę -> 20 punktów
+* Działalność gospodarcza -> 10 punktów
+* Pozostałe przypadki -> 0 punktów
+* Brak danych dotyczących rodzaju zatrudnienia -> 0 punktów
+
+==== Obliczanie punktów za sytuację osobistą kredytobiorcy
+
+Jeżeli informacja o sytuacji społecznej nie została zwrócona, przyznane jest 0 punktów. W przeciwnym wypdaku, punktacja stanowi sumę punktów wyliczonych dla zawodu, wykształcenia i lat doświadczenia zawodowego.
+
+==== Obliczanie punktów za zawód
+
+Punkty za zawód są ustalane okresowo przez biznes i zapisywane w bazie danych.
+W przypadku gdy dla danego zawodu nie została zapisana w bazie liczba punktów, przyznawane jest 0 puntków.
+
+==== Obliczanie punktów za wykształcenie
+
+* Wykształcenie podstawowe -> 10 punktów
+* Wykształcenie średnie -> 30 punktów
+* Wykształcenie wyższe -> 50 punktów
+* W pozostałych przypadkach -> 0 punktów
+* Brak danych dotyczących wykstałcenia -> 0 punktów
+
+==== Obliczanie punktów za lata doświadczenia zawodowego
+
+* 0 lat doświadczenia zawodowego -> 0 punktów
+* 1 rok doświadczenia zawodowego -> 5 punktów
+* 2-4 lat doświadczenia zawodowego -> 10 punktów
+* 5-9 lat doświadczenia zawodowego -> 20 punktów
+* 10-14 lat doświadczenia zawodowego -> 30 punktów
+* 15-19 lat doświadczenia zawodowego -> 40 punktów
+* 20-29 lat doświadczenia zawodowego -> 50 punktów
+* Powyżej 29 lat doświadczenia zawodowego -> 60 punktów
+* Ujemna wartość lat doświadczenia zawodowego -> 0 punktów
+
+==== MONTHLY INCOME SERVICE
+
+Połączenie po HTTP.
+
+Dostajemy informację o miesięcznym dochodzie.
+
+==== MONTHLY COST SERVICE
+
+Połączenie po HTTP.
+
+Dostajemy informację o stałych wydatki (np. z tytułu czynszu, innych opłat).
+
+==== CREDIT INFO SERVICE
+
+Dane z bazy MongoDB oraz messaging po RabbitMQ. Wykorzystujemy cache.
+
+Dostajemy informacje zawierające:
+
+* Aktualne zadłużenie (spłacane kredyty, pożyczki, ale także posiadane karty kredytowe czy limity w rachunku, ze szczególnym uwzględnieniem wysokości raty innych kredytów);
+* Koszty utrzymania kredytobiorcy i jego rodziny;
+* Historia kredytowa (sposób, w jaki kredytobiorca spłacał dotychczasowe zobowiązania);
+
+Żeby zasymulować uzyskanie wiadomości po messagingu wystarczy wrzucić następującego JSONa na kolejkę `creditInfo`.
+
+```json
+{
+  "creditInfo" : {
+    "currentDebt" : 1000,
+    "currentLivingCosts" : 2000,
+    "debtPaymentHistory" : "NotASingleUnpaidInstallment"
+   },
+  "pesel" : {
+    "pesel" : "49111144777"
+  }
+}
+```
+
+==== SOCIAL INFO SERVICE
+
+Połączenie po HTTP.
+
+Dostajemy informacje zawierające:
+
+* Liczba osób na utrzymaniu, liczba osób w gospodarstwie domowym;
+* Stan cywilny i status majątkowy;
+* Źródło otrzymywania dochodu, typ umowy;
+
+==== PERSONAL BACKGROUND SERVICE
+
+Dane z bazy PostgreSQL oraz połączenie po HTTP. Wykorzystujemy cache.
+
+Dostajemy informacje zawierające:
+
+* Wykształcenie;
+* Doświadczenie zawodowe, wykonywany zawód.
+
+== Architektura
+
+Podział na `Core` i `BikService`. W `Core` mamy domenę, a w `BikService` spinamy domenę z Asp.Net Core i rzeczywistymi usługami zewnętrznymi (HTTP, messaging, DB itd.).
+
+== Strategia testowania
+
+Kod zawiera przykłady testów ze wszystkich możliwych poziomów. Nie oznacza to, że każdy możliwy przypadek testowy został rzeczywiście przetestowany. Sugerujemy uczestnikom szkolenia najpierw spróbować napisać testy we własnym zakresie, a istniejące testy traktować jako punkt odniesienia.
+
+== Moduł Core
+
+**Unity** oraz **mutacyjne** dla algorytmów. **Testy zrównoleglenia** dla przestrzeni `Analysis`.
+
+**Testy architektury** dla całości (np. nie powinno być referencji do Asp.Net Core).
+
+== Moduł BikService
+
+**Integracyjne** dla końcówek HTTP i messaging (brak kontraktów dla listenera + klientów http, ponieważ nie mamy dostępu do usług zewnętrznych), ale z **usługami uruchomionymi w kontenerze**. W przypadku używania cachea dopiszemy testy z cachem. Testy **akceptacyjne** czyli test integracyjny z uruchamianymi usługami w kontenerach
+
+**Testy kontraktowe** dla kontrollera HTTP i messagingu. Proponujemy podpięcie RESTDocs żeby wygenerować **dokumentację** (w innych językach proponujemy ją jakkolwiek opisać np. poprzez Swaggera).
+
+**Testy architektury** - kod z przestrzeni nazw nie powinien wołać kodu z innej przestrzeni (`Infrastructure` nie powinien wołać `Personal` i odwrotnie). Jeśli tak jest to należy wydzielić osobny moduł, który będzie współdzielony.
+
+**Chaos testing** - wymagania:
+
+```
+ Hipoteza stanu ustalonego
+     GET na URL “/{pesel}”, z peselem osoby nie będącej oszustem, odpowie statusem 403, w ciągu 1000 ms
+ Metoda
+     Włączamy błędy spowodowane integracją z bazą danych
+ Wycofanie
+     Wyłączamy błędy spowodowane integracją z bazą danych
+```
+
+Przy testach musimy unieważniać cache!
+
+**Podpięty sonarqube** i **editorconfig**.
+
+**Dev mode** musi być przygotowany w taki sposób, że można lokalnie uruchomić aplikacje bez infrastruktury.
+
+== Błędy w kodzie produkcyjnym
+
+Implementacja zawiera błędy, które testy powinny wychwycić (powodzenia w ich szukaniu!).
+
+== Uruchomienie Prometheusa i Grafany
+
+Wartości dodanych przez siebie metryk możesz agregować w Prometheusie i tworzyć dla nich dashboardy w Grafanie. Stworzyliśmy do tego celu demo setup do uruchomienia na dockerze.
+
+Przed rozpoczęciem 
+
+1) Zbuduj dockery obu aplikacji (można to zrobić klikając z poziomu Visual Studio prawym przyciskiem myszy na plik Dockerfile i wybierając Build Docker Image)
+
+2) Uruchom środowisko E2E
+
+```
+cd 00-App/Src/00-FraudDetection/FraudDetectionTests/Docker
+docker compose -f .\docker-compose-e2e.yml up
+```
+
+
+Wykonaj trochę zapytań do aplikacji FraudDetection korzystając ze skryptów `00-App/Src/00-FraudDetection/json/Fraud.ps1` i `00-App/Src/00-FraudDetection/json/Fraud.ps1/Positive.ps1` (możesz podmienić kilka razy Guid w plikach `00-app/00-fraud-detection/src/json/fraud.json` i `00-app/00-fraud-detection/src/json/positive.json` żeby wykonać więcej weryfikacji - jeżeli Guid jest ten sam, wyciągana jest wartość z bazy danych zamiast przeprowadzania nowej weryfikacji).
+
+Następnie:
+
+1) Sklonuj repozytorium z setupem docker-compose:
+
+```
+git clone git@github.com:OlgaMaciaszek/prometheus.git
+```
+
+Bądź, jeśli powyższe nie zadziała, to:
+
+```
+git clone https://github.com/OlgaMaciaszek/prometheus.git
+```
+
+2) Przejdź na gałąź `smarttesting`
+
+```
+cd prometheus
+git checkout smarttesting
+```
+
+3) (Procedura dla Windowsa 10 z dockerem na WSL2. Jeśli używasz opartych na Linuksie, spróbuj dostosować wersję tego kroku z Javowej wersji kodu).
+
+Zmień plik `./prometheus/prometheus.yml`, podmieniając istniejącą tam sekcję `scrape_configs` na nastepującą:
+
+```
+scrape_configs:
+  - job_name: 'apps'
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    static_configs  :
+      - targets: ['host.docker.internal:7654','host.docker.internal:8765']
+```
+
+4) Uruchom kontenery:
+
+```
+docker-compose up
+```
+
+5) W przeglądarce uruchom Prometheusa pod `localhost:9090`. Możesz przeglądać metryki i tworzyć do nich grafy.
+
+6) W przeglądarce Grafanę pod `localhost:3000` (użytkownik: `admin`, hasło: `foobar`). Na stronie `localhost:3000/dashboards` znajdziesz linki do przykładowych dashboardów. Dashboard `BIKService` zawiera histogram wygenerowany na podstawie metryk zapisywanych w klasie `ScoreAnalyzer`, ale... UWAGA: trzeba zmienić troszkę nazwę tej metryki! Należy wyedytować źródło i zmienić `score_aggregated` na `score_aggregated_sum`.
+
+Niektóre metryki systemowe z naszych aplikacji będą dostępne tylko, kiedy zostaną uruchomione pod Linuksem (WSL2 też powinien zadziałać) - zerknij na opis poszczególnych metryk systemowych pod adresem https://github.com/Daniel15/prometheus-net.SystemMetrics.
+
+Możesz tworzyć dashboardy dla dodanych przez siebie metryk.
+
+== Przykładowe KPI dla serwisu
+* X weryfikacji przeprowadzonych w trakcie godziny
+* Średni czas trwania weryfikacji nie przekraczający X
+* Czas trwania pojedynczej weryfikacji nie przekraczający X
+
+=== Inne przydatne metryki
+* Nie więcej niż X wyników powyżej/poniżej pewnej wartości punktów (porównywane do danych historycznych - jeżeli nagle będziemy mieć np. o 50% więcej wyników bardzo wysokich lub bardzo niskich, może to świadczyć o tym, że pojawił się błąd w kodzie odpowiedzialnym za weryfikację)

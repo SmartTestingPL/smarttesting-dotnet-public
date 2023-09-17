@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bullseye" Version="3.8.0" />
+    <PackageReference Include="DotnetExeCommandLineBuilder" Version="0.3.0" />
+    <PackageReference Include="SimpleExec" Version="8.0.0" />
+    <PackageReference Include="AtmaFilesystem" Version="5.0.0" />
+  </ItemGroup>
+
+
+</Project>

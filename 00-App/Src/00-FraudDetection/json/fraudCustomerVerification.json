@@ -1,0 +1,13 @@
+{
+  "Person": {
+    "Name": "Dionizy",
+    "Surname": "Dionizowski",
+    "DateOfBirth": "1980-01-01",
+    "Gender": "Male",
+    "NationalIdentificationNumber": "2345678901"
+  },
+  "Result": {
+    "UserId": "fc93ff57-614b-431f-9713-675b2c25c3e9",
+    "Status": "VerificationFailed"
+  }
+}

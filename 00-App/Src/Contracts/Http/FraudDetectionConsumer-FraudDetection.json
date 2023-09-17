@@ -1,0 +1,66 @@
+{
+  "consumer": {
+    "name": "FraudDetectionConsumer"
+  },
+  "interactions": [
+    {
+      "description": "Should return OK for non-fraud",
+      "request": {
+        "body": {
+          "Guid": "89c878e3-38f7-4831-af6c-c3b4a0669022",
+          "Person": {
+            "DateOfBirth": "2020-01-01",
+            "Gender": "Female",
+            "Name": "Stefania",
+            "NationalIdentificationNumber": 1234567890,
+            "Surname": "Stefanowska"
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/fraud/fraudCheck"
+      },
+      "response": {
+        "status": 200
+      }
+    },
+    {
+      "description": "Should return unauthorized for fraud",
+      "request": {
+        "body": {
+          "Guid": "cc8aa8ff-40ff-426f-bc71-5bb7ea644108",
+          "Person": {
+            "DateOfBirth": "1980-01-01",
+            "Gender": "Male",
+            "Name": "Fraudeusz",
+            "NationalIdentificationNumber": 2345678901,
+            "Surname": "Fraudowski"
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/fraud/fraudCheck"
+      },
+      "response": {
+        "status": 401
+      }
+    }
+  ],
+  "metadata": {
+    "pactRust": {
+      "ffi": "0.2.2",
+      "mockserver": "0.8.7",
+      "models": "0.2.7"
+    },
+    "pactSpecification": {
+      "version": "3.0.0"
+    }
+  },
+  "provider": {
+    "name": "FraudDetection"
+  }
+}

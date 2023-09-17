@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AtmaFileSystem" Version="6.1.0" />
+    <PackageReference Include="Ductus.FluentDocker" Version="2.10.59" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Any" Version="9.2.1" />
+    <PackageReference Include="FluentAssertions" Version="6.11.0" />
+    <PackageReference Include="Flurl.Http" Version="3.2.4" />
+    <PackageReference Include="Core.Maybe.Json" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
+    <PackageReference Include="NodaTime" Version="3.1.9" />
+    <PackageReference Include="NSubstitute" Version="5.0.0" />
+    <PackageReference Include="PactNet" Version="4.5.0" />
+    <PackageReference Include="Testcontainers" Version="3.4.0" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="3.4.0" />
+    <PackageReference Include="Testcontainers.RabbitMq" Version="3.4.0" />
+    <PackageReference Include="TngTech.ArchUnitNET.NUnit" Version="0.10.6" />
+    <PackageReference Include="WireMock.Net" Version="1.5.34" />
+    <PackageReference Include="XNSubstitute" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FraudDetection\FraudDetection.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="../../Contracts/**/*.*">
+      <Link>Contracts/%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="..\..\Contracts\Http\FraudDetection-BikService.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="..\..\Contracts\Messaging\CustomerVerificationEventConsumer-FraudDetection.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>
