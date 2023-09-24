@@ -1,0 +1,37 @@
+﻿= 02 Testy jednostkowe c.d.
+
+Tematy omawiane w tej części:
+
+* Struktura klasy testowej:
+  - setup i tear-down; zobacz: `LoanOrderServiceTest`
+  - zastosowanie builderów; zobacz: `CustomerBuilder`/`CustomerBuilderSimpleDotNetStyle` i `CustomerVerifierTest`
+  - klasy bazowe; zobacz: `LoanOrderTestBase`, `CustomerTestBase`
+* Co i kiedy testować
+  - testowanie wyniku operacji; zobacz: `LoanOrderServiceTest.ShouldCreateStudentLoanOrder`
+  - testowanie stanu; zobacz: `LoanOrderTest.ShouldAddManagerPromo`
+  - testowanie interakcji; zobacz: `CustomerVerifierTest.ShouldEmitVerificationEvent`
+  - które metody testować
+* Mockowanie i stubowanie
+  - zobacz: `LoanOrderServiceTest`
+* Szkoły testów jednostkowych
+* Mocki i stuby - dobre praktyki
+* Testy Data-Driven
+  - zobacz: `NationalIdentificationNumberVerificationTest`
+
+Komentarz Grześka: w tej części źródłem największej różnicy między przykładami Javowymi
+a .NETowymi był sposób w jaki NUnit inicjuje pola w klasach testowych. W JUnit nowy egzemplarz
+klasy testowej jest tworzony dla każdego testu (a więc wartości wszystkich pól instancji są resetowane).
+Natomiast w NUnicie, podobnie jak w Javowym TestNG, każda klasa testowa tworzona jest tylko raz dla
+wszystkich testów, a zatem pola zainicjowane za pomocą inicjalizatorów są współdzielone przez
+wszystkie testy, jeśli się ich samemu nie zresetuje (np. w metodzie [SetUp]).
+
+**DISCLAIMER**
+
+* Kod jest czysto demonstracyjny i nie stanowi wzorcowego kodu projektowego - zamiast na jak
+najlepiej napisanym kodzie produkcyjnym koncentrujemy się na przykładach, które pozwalają pokazać
+wiele sposobów pracy z testami; często celowo dodajemy "produkcyjny" kod, który nie jest poprawnie zaprojektowany po to, 
+żeby pokazać jak sobie z nim radzić i mimo wszystko być w stanie go przetestować
+oraz przykłady złych testów, których radzimy unikać.
+* Nie polecamy pisania komentarzy po polsku w projektach - tutaj robimy to ponieważ jest to wyłącznie kod szkoleniowy.
+
+
