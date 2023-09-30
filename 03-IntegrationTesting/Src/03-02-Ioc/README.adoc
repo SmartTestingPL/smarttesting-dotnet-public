@@ -1,0 +1,103 @@
+﻿= Frameworki do Inversion of Control
+
+== W jaki sposób tworzysz obiekty? [01]
+
+=== Kod
+
+Tylko `_01_IocTests.cs`
+
+=== Notatki
+
+Niezależnie od tego, czy używasz obiektowego języka programowania, czy programujesz funkcyjnie, 
+w jakiś sposób musisz uzyskać dany obiekt lub funkcję. Jedną z opcji jest ich ręczne zainstacjonowanie. 
+Co w przypadku złożeń funkcji albo stworzenia bardziej skomplikowanych obiektów? Spójrzmy na następujący 
+przykład kodu `_01_IocTests.cs`.
+
+Widzimy jak żeby stworzyć finalny obiekt, musimy utworzyć 3 inne, które też potrzebują 
+swoich zależności, które na dodatek są współdzielone między sobą.
+Ponadto mamy połączenie samego tworzenia obiektów, z logika biznesową, 
+która pojawia nam się w ostatniej linijce.
+
+Czy ten kod jest zły?
+
+Absolutnie nie! Mamy pełną kontrolę nad tworzeniem obiektów i ich cyklem życia. 
+Nie potrzebujemy żadnych dodatkowych frameworków, żeby nasz system działał poprawnie, żeby zarabiał. 
+Czy jest testowalny? Jak najbardziej, gdyż to my kontrolujemy jak obiekty są tworzone, 
+zatem dla testów moglibyśmy tworzyć inne.
+
+Co jeśli chcielibyśmy dodać kolejną weryfikację? Musimy zmienić kod!
+
+Czy istnieją inne sposoby? Czy można odseparować tworzenie obiektów, ich konfigurację od ich użycia? 
+Tak! Np. podejście kontenerów Inversion of Control.
+
+== Na czym polega Inversion of Control przy użyciu kontenerów? [02,03]
+
+=== Kod
+
+Najpierw `_02_Config.cs`, później `_03_AspNetIocTests.cs`.
+
+=== Notatki
+
+==== _02_Config.cs
+
+W różnych językach programowania istnieją frameworki, które wprowadzają wspomagany mechanizm 
+“Odwrócenia Kontroli”.  Zobaczmy na przykładzie C# i kontenera wbudowanego w Asp.Net Core, 
+jak wyglądałoby użycie tego frameworka do rozdzielenia definicji konstrukcji od użycia danego obiektu.
+
+Niezależnie od użytego frameworka lub języka programowania, 
+koncepcja pozostaje dokładnie ta sama. Mamy swoisty schemat stanu naszego systemu, 
+składającego się z obiektów.
+
+Kontener zarządza życiem obiektów. Zarządca tych obiektów potrafi wstrzyknąć jedne obiekty 
+w drugie oraz grupować je w kolekcje.
+
+Jeśli spojrzymy na poprzedni przykład, gdzie żeby dodać weryfikację musimy zmienić główny 
+kod aplikacji, to w przypadku IoC, wystarczy, że zarejestrujemy nową weryfikację 
+i dodamy do kolekcji.
+
+==== _03_AspNetIocTests.cs
+
+Tak zdefiniowany schemat systemu jesteśmy w stanie przekazać do zarządcy, 
+który będzie w stanie utworzyć te obiekty w odpowiedniej kolejności i utworzyć 
+graf zależności między nimi.
+
+Następnie z zarządcą komunikujemy się w celu wyciągnięcia już utworzonego obiektu.
+
+Na nim możemy już operować w zakresie logiki biznesowej.
+
+== IOC / DI i testowanie [04,05]
+
+=== Kod
+
+Wpierw `_04_ManualIocTests.cs`, potem `_05_CustomerVerificationTests.cs`
+
+=== Notatki
+
+Czy uruchamiać cały kontekst za każdym razem?
+
+Naturalnym pytaniem jest jak testować naszą aplikację, 
+która używa Dependency Injection. W pierwszej chwili można odpowiedzieć, że należy uruchamiać 
+cały kontekst, który poustawia nam drzewo zależności obiektów, a następnie wyciągnąć obiekt 
+leżący w zakresie naszych zainteresowań (SUT - system under test) i przeprowadzić na nim testy. 
+Jest to poprawne podejście, gdyż rzeczywiście nasz kontekst będzie ustawiony w sposób najbardziej 
+zbliżony do systemu produkcyjnego (należy pamiętać o testowych zależnościach). 
+Inna sprawa, że niektóre frameworki bazują na analizie naszych źródeł i zależności, 
+żeby to drzewo zbudować, co oczywiście może trwać. Pytanie czy nie ma innego podejścia, 
+niż uruchamianie całej maszynerii po to, żeby kontekst postawić?
+
+W Javie innym podejściem może być użycie wspomnianego schematu konstrukcji obiektów, 
+żeby nasz moduły zbudować ręcznie. W .NET takie podejście jest niepraktyczne, ale utworzenie
+i używanie kontenera nie jest jakieś uciążliwe, tym bardziej że rozwiązuje on zależności
+w sposób "leniwy".
+
+==== _04_ManualIocTests.cs
+
+Ten przykład jest nieaplikowalny w sposób praktyczny w .NET. Patrz komentarz w pliku .cs
+
+==== _05_CustomerVerificationTests.cs
+
+Pokazujemy jak może wyglądać integracja kontenera
+IOC z frameworkiem do testowania.
+
+Komentarz Grześka: W tym przykładzie główne różnice wynikają z innego podejścia do rejestracji
+zależności w kontenerach .NETowych niż w Springu. Warto zajrzeć w README do wersji Javowej.

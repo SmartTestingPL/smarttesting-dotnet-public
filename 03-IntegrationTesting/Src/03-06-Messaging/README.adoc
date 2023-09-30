@@ -1,0 +1,76 @@
+﻿= Testowanie brokerów wiadomości
+
+== Kod
+
+Przede wszystkim `CustomerVerifier.cs`, który jako serwis aplikacyjny wykorzystuje `IFraudAlertNotifier` do wysłania wiadomości do brokera (i jego implementacja używająca RabbitMQ - `MessagingFraudAlertNotifier`).
+Drugi komponent to `FraudListener`, który nasłuchuje na wiadomości pochodzące z kolejek brokera (jego implementacja, wykorzystująca RabbitMQ to `MessagingFraudListener`).
+
+== Notatki
+
+W przypadku testów integracyjnych z brokerem wiadomości trzeba tego brokera w jakiś sposób uruchomić. Z jednej strony chcielibyśmy żeby nie trwało to zbyt długo, z drugiej chcielibyśmy żeby testy jak najbardziej odzwierciedlały system produkcyjny. Oczywiście też chcemy pełnej automatyzacji uruchamiania brokera.
+
+Potencjalne rozwiązania: zaślepka, w pamięci, embedded, kontener
+
+=== Zaślepka [01]
+
+==== Klasy
+
+`_01_CustomerVerifierMockMessagingTests.cs`
+
+==== Notatki
+
+* Mocki weryfikują efekty uboczne
+** By upewnić się, że się coś po prostu zadziało
+** Czy doszło do wysłania wiadomości na kolejkę
+* Zalety
+** Natychmiastowe działanie
+** Pożądane w przypadku testów domeny biznesowej
+* Wady
+** Brak testów integracji z brokerem
+
+=== W pamięci [02]
+
+==== Klasy
+
+`_02_CustomerVerifierInMemoryMessagingTests`
+
+==== Notatki
+
+* Ręcznie zaimplementowana kolekcja
+* Ekstremalnie szybkie testy
+** Do rozważenia dla głównej części dziedziny / uruchomienia deweloperskiego
+** Brak interakcji z IO
+* Natywne wsparcie narzędzi testowych dla frameworku messagingowego
+
+=== W kontenerze [03]
+
+==== Klasy
+
+* `_03_CustomerVerifierWithContainersTests`
+** Gdzie stawiamy kontener z RabbitMQ i testujemy CustomerVerifier wraz z produkcyjnym wysyłaczem wiadomości
+** Nie testujemy jeszcze osobno wysyłacza, gdyż
+*** w poprzednich przykładach wychodziliśmy od tego jak moglibyśmy wyjść od serwisu aplikacyjnego - kontynuujemy ten proces
+*** wysyłacz ma banalny kod - przy złożeniu, że nie jest wykorzystywany nigdzie poza serwisem aplikacyjnym to możemy rozważyć testowanie ich razem
+** `_03_MessagingFraudListenerTests` - test nasłuchiwacza wiadomości
+
+==== Notatki
+
+* Broker uruchamiany dla danego testu / danej grupy testów w kontenerze
+* Dość szybkie w momencie zcache’owania obrazu brokera
+** Jeszcze szybciej jeśli używamy ponownie kontenerów
+* Przykłady natywnego wsparcia w testach
+** Testcontainers, dotnet-testcontainers
+* Łatwe do ręcznego zaimplementowania
+** Uruchom kontener, uruchom testy wobec kontenera, ubij kontener
+
+=== W kontenerze - bonus [04]
+
+==== Klasy
+
+`_04_MessagingFraudAlertNotifierWithContainersTests`
+
+==== Notatki
+
+W kontrze do założenia, że testujemy wysyłacza zawsze razem z serwisem aplikacyjnym, mamy test, który wysyłacza testuje osobno wobec kontenera z brokerem wiadomości.
+
+Tak przetestowany kod daje nam test integracyjny. Wówczas możemy w innych miejscach, gdzie nasz wysyłacz jest wykorzystywany wstrzyknąć mocka.

@@ -1,0 +1,10 @@
+{
+  "Guid": "48d80d4a-5ea9-4685-b241-e75d5dca9a63",
+  "Person": {
+    "Name": "Fradeusz",
+    "Surname": "Fraudowski",
+    "DateOfBirth": "1980-01-01",
+    "Gender": "Male",
+    "NationalIdentificationNumber": "2345678901"
+  }
+}

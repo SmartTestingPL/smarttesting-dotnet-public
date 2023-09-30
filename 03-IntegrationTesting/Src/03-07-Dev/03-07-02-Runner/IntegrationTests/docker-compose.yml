@@ -1,0 +1,31 @@
+﻿version: '3'
+
+services:
+  postgres:
+    image: postgres:15.4
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    expose:
+      - "5672"
+  app:
+    image: webapplication:latest
+    ports:
+      - 7654:80
+    expose:
+      - "7654"
+    environment:
+        RabbitMqConfiguration__ConnectionString: "amqp://guest:guest@rabbitmq"
+        PostgreSqlConfiguration__ConnectionString: "Host=postgres;Database=test;Username=test;Password=test" 
+    depends_on:
+      - "postgres"
+      - "rabbitmq"
+    links:
+      - postgres
+      - rabbitmq
+
