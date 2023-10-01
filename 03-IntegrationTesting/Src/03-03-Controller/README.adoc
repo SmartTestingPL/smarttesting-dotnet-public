@@ -1,0 +1,100 @@
+﻿= Kontroler / HTTP
+
+== Kod
+
+`FraudController.cs`
+
+== Notatki
+
+Zanim napiszemy jakikolwiek test, powinniśmy sobie zadać pytanie, co dokładnie chcemy przetestować. Jaki jest cel naszego testu? W tym przypadku, mamy kontroler czyli obiekt przyjmujący żądania HTTP i zwracający odpowiedź w tym protokole.
+
+Mamy kilka możliwości testowania kontrolerów:
+testowanie kontrolera jako obiektu, testowanie kontrolera po warstwie HTTP z alokacją portu, testowanie kontrolera po warstwie HTTP bez alokacji portu
+
+Rozważmy teraz przypadki takich testów, jednak zobaczmy najpierw kod. Przykładem będzie kod napisany w C# z użyciem Asp.Net Core.
+
+=== Testowanie kontrolera jako obiektu [01]
+
+==== Klasy
+
+`_01_ControllerTests.cs` i klasy przez nią używane.
+
+==== Notatki
+
+Jeśli zainicjujemy kontroler jako obiekt oraz jego zależności to z punktu widzenia kontrolera mamy nic innego jak test jednostkowy. W taki sposób testujemy bez warstwy HTTP logikę naszych komponentów. Zakładając, że przetestowaliśmy jednostkowo customerVerifier, taki test nam nic nie daje. Zatem skoro naszym celem jest zweryfikowanie czy nasz kontroler komunikuje się po warstwie HTTP to kompletnie nam się to nie udało.
+Czy jest to zły test? Nie, ale trzeba włączyć w to testowanie warstwy HTTP. Zaczniemy od testu z alokowaniem portu. Oznacza to, że nasza aplikacja zostanie uruchomiona na porcie HTTP, na który to port uderzymy w celu weryfikacji czy nasz kontroler działa poprawnie.
+
+=== Testowanie kontrolera po warstwie HTTP z alokacją portu [02]
+
+==== Klasy
+
+`_02_FraudControllerWithPortBindingTests.cs` i klasy przez nią używane.
+
+==== Notatki
+
+Sprawdźmy co tu się dzieje. Odpaliliśmy aplikację na dowolnym dostępnym porcie. Czemu nie ustawiamy portu na sztywno? Dlatego, że dany port mógł zostać już zajęty na danej maszynie, na której nasze testy są odpalane w wyniku czego, test mógłby nie przejść mimo, że nie ma żadnego błędu.
+
+Prawdopodobieństwo, że wylosuje się nam 2 razy ten sam port jest tu tak niskie, 
+że możemy je spokojnie zignorować.
+
+Następnie wysyłamy żądanie na http://localhost:losowy_port/fraud/fraudCheck, typu application/json, i w ciele tego żądania wysyłamy nie obiekt, a tekst, który zostanie zserializowany i zdeserializowany przez nasz kontroler. Czyli na tym etapie sprawdzamy czy nasza aplikacja potrafi po warstwie HTTP pobrać dane i je przeprocesować. Ponadto, zweryfikujemy czy odpowiednio zwraca odpowiedź.
+
+Udało nam się zweryfikować dużo więcej niż w przypadku poprzedniego testu.
+
+Czy są jakieś problemy, które możemy tu zaobserwować?
+testujemy logikę biznesową serwisu aplikacyjnego (customerVerifier), podczas gdy chcielibyśmy zweryfikować jedynie warstwę HTTP
+
+Co jeśli by wykonać tę weryfikację należałoby wyciągnąć dane z bazy danych, wywołać inny serwis itd? Utrudnia nam to testowanie. Wtedy już się z tego robi prawie test E2E.
+
+Chcemy przetestować tylko nasz kontroler po protokole HTTP, a w tym teście uruchamia nam się cała aplikacja i musimy alokować port.
+
+Spróbujmy zaadresować te problemy pojedynczo.
+
+=== Zamockowanie serwisu [03]
+
+==== Klasy
+
+`_03_FraudControllerWithFakeAndPortBindingTests.cs` i klasy przez nią używane.
+
+==== Notatki
+
+Ponieważ chcemy jedynie przetestować warstwę kontrolera, pierwszą rzeczą, którą powinniśmy zrobić to użyć fakeowowej implementacji / mocka dla naszego serwisu aplikacyjnego. Nie chcemy testować na tym etapie warstwy biznesowej.
+
+W tym celu jesteśmy w stanie utworzyć ręcznie taką implementację i zarejestrować ją w kontenerze, która na potrzeby naszego testu warstwy HTTP zwróci sztucznie pewne wyniki. Naszym celem jest asercja możliwości komunikacji po protokole HTTP.
+
+=== Mockowanie warstwy sieciowej [04]
+
+==== Klasy
+
+`_04_TestHostControllerTests.cs` i klasy w niej zagnieżdżone.
+
+==== Notatki
+
+W różnych językach programowania narzędzia do obsługi kontrolerów często dostarczają możliwość uruchomienia testu z zamockowaną warstwą sieciową. Już wiemy, że interakcja z IO jest źródłem opóźnień w naszych testach.
+
+W przypadku C# i Asp.Net, takim narzędziem jest TestHost, dostępny w nugecie Microsoft.AspNetCore.TestHost. Bez wchodzenia w większe szczegóły, możemy zobaczyć tu, gotowe  rozszerzenia testowe, które pozwalają na szybsze testowanie bez wykorzystania IO i bindowaniu na porcie.
+
+Kontekst Asp.Netowy jest ograniczony, nie uruchamia całej aplikacji, tylko jej kluczowe elementy. 
+TestHost daje nam obiekt TestServera, z którego z kolei możemy pobrać odpowiednio skonfigurowanego HttpClienta, dzięki któremu jesteśmy w stanie w elegancki sposób zapisać co chcemy uzyskać z punktu widzenia testowania API, a także użyć innych bibliotek które integrują się z HttpClientem (np. Flurl, czy RestAssured).
+
+=== Frameworki używające pseudo-Gherkina (czasem nazywanego "językiem BDD") do testowania API [05]
+
+==== Kod
+
+Najpierw `_05_RestAssuredWithFakeAndTestHost.cs` i _05_RestAssuredWithTestHost.cs.
+
+==== Notatki
+
+Czy w takim razie stawianie całej aplikacji niezależnie od tego czy alokujemy port czy nie jest złe?
+
+Nie, gdyż można wykorzystać takie testy do testu integracyjnego krytycznych ścieżek naszej aplikacji.
+
+W przypadku, w którym punktem wejścia naszej aplikacji jest kontroler, możemy wykorzystać takie testy jako dokumentację funkcjonalności naszej aplikacji.
+
+W różnych językach programowania macie dostęp do frameworków, które tworzą ładną abstrakcję nad testowanie kontrolerów. W świecie Javy, jednym z takich narzędzi jest Rest Assured. W świecie .NET polecam kombinację Flurl.Http + FluentAssertions, natomiast port RestAssured również jest dostępny i został użyty w tym przykładzie.
+
+W podanych przykładzie wykorzystujemy po raz kolejny TestHosta z testowymi zależnościami, żeby nie trzeba było podnosić całej aplikacji. Z RestAssured integrujemy się poprzez HttpClienta pobranego z TestServera. Ponadto na żadnym etapie nie jest potrzebne  uruchomienie aplikacji na porcie.
+
+Jak wspomnieliśmy wcześniej testy integracyjne mogą zostać wykorzystane do zweryfikowania działania krytycznych ścieżek naszej aplikacji. W tym przykładzie traktujemy naszą aplikację jako czarną skrzynkę (black box), w której nie chcemy weryfikować detali implementacyjnych. Nie chcemy testować jedynie warstwy Kontrolera, raczej chcemy wykorzystać tę warstwę jako punkt wejścia do naszej aplikacji.
+
+Używając narzędzi wymuszających użycie DSLa, abstrachujemy większość detali implementacyjnych i możemy skupić się na konkretnych aspektach biznesowych działania naszej aplikacji.
