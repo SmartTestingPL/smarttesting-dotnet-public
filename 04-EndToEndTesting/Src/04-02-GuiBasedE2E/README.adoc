@@ -1,0 +1,48 @@
+﻿= 04.02 Testy E2E z poziomu GUI
+
+Tematy omawiane w tej części:
+
+* Częste problemy w testach E2E z poziomu GUI
+  - zobacz: `PetClinicTests`
+* Obsługa oczekiwania na załadowanie się strony
+  - zobacz: `PageObject.PageReady`
+* Zastosowanie wzorca PageObjectModel
+  - zobacz: `PetClinicPageObjectModelTests`
+* Nakładki na Selenium
+  - zobacz `PetClinicNSeleneTests`
+
+**Setup do Testów**
+
+Testy Selenium w tym module są uruchamiane względem projektu [Pet Clinic](https://github.com/spring-projects/spring-petclinic).
+
+Przed uruchomieniem aplikacji należy zainstalować i uruchomić dockera (https://www.docker.com/). Pod Windowsem najłatwiej użyć docker desktop (https://www.docker.com/products/docker-desktop), którego pod pewnymi warunkami można używać za darmo (informacje na wymienionej stronie).
+
+Projekt należy sklonować z GitHuba i odpalić lokalnie (UWAGA: Jeśli build wywali się na jakimś błędzie z analizą stylu/formatu, PRZECZYTAJ UWAŻNIE KOMUNIKAT O BŁĘDZIE - będzie tam napisane, jakiego polecenia użyć, żeby problem naprawić :-)):
+
+```
+git clone https://github.com/spring-projects/spring-petclinic.git
+cd spring-petclinic
+git reset --hard e2fbc561309d03d92a0958f3cf59219b1fc0d985
+mvnw spring-boot:run
+```
+
+Strona będzie dostępna z przeglądarki spod: http://localhost:8080/.
+
+Żeby testy z wykorzystaniem WebDriver'a działały, należy ściągnąć wersję 
+WebDriver'a odpowiednią dla przeglądarki i systemu operacyjnego.
+W .NET zajmują się tym nugety Selenium.WebDriver 
+i Selenium.WebDriver.ChromeDriver. WERSJA NUGETA MUSI BYĆ DOPASOWANA
+DO WERSJI PRZEGLĄDARKI ZAINSTALOWANEJ W SYSTEMIE.
+
+Uruchamianie testów:
+ 
+```
+cd 04-EndToEndTesting/Src/04-02-GuiBasedE2E
+dotnet test
+```
+
+
+**DISCLAIMER**
+
+* Kod jest czysto demonstracyjny i nie stanowi wzorcowego kodu projektowego - zamiast na jak najlepiej napisanym kodzie produkcyjnym koncentrujemy się na przykładach, które pozwalają pokazać wiele sposobów pracy z testami; często celowo dodajemy "produkcyjny" kod, który nie jest poprawnie zaprojektowany po to, żeby pokazać jak sobie z nim radzić i mimo wszystko być w stanie go przetestować oraz przykłady złych testów, których radzimy unikać. 
+* Nie polecamy pisania komentarzy po polsku w projektach - tutaj robimy to ponieważ jest to wyłącznie kod szkoleniowy.

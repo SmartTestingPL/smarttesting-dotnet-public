@@ -1,0 +1,65 @@
+﻿= 04.01 Testy E2E z poziomu API
+
+Tematy omawiane w tej części:
+
+* Częste problemy w testach E2E po API
+  - zobacz: `HttpClientBasedCustomerVerificationTests.ShouldSetOrderStatusToVerifiedWhenCorrectCustomer`
+* Obsługa eventual consistency
+  - zobacz: `HttpClientBasedCustomerVerificationTests.ShouldSetOrderStatusToFailedWhenIncorrectCustomer`
+* Poprawa czytelności i ujednolicenie warstw abstrakcji
+  - zobacz: `HttpClientBasedCustomerVerificationTests.ShouldSetOrderStatusToFailedWhenIncorrectCustomer`
+* Zastosowanie bibliotek do weryfikacji API
+  - zobacz `RestAssuredCustomerVerificationTests`
+* Zastosowanie bibliotek do generowania danych testowych
+  - zobacz `RestAssuredCustomerVerificationTests`
+
+**Uruchamianie aplikacji i testów**
+
+Moduł składa się z 4 podmodułów:
+* 2 "aplikacji biznesowych": 
+  - LoadOrders - służy do składania wniosków o udzielenie pożyczki
+  - FraudVerifier - służy do weryfikacji klientów
+* Serwera Eureka służącego za ServiceRegistry (w wersji Javowej był to jeden z modułów. W wersji .Net ściągniemy sobie obraz dockerowy)
+* E2ETests - modułu zawierającego testy E2E do uruchamienia względem już działającego systemu 
+
+Przed uruchomieniem aplikacji należy zainstalować i uruchomić dockera (https://www.docker.com/). Pod Windowsem najłatwiej użyć docker desktop (https://www.docker.com/products/docker-desktop), którego pod pewnymi warunkami można używać za darmo (informacje na wymienionej stronie).
+
+1. Uruchom MongoDB, np. przy użyciu dockera:
+
+```
+docker run -p 27017:27017 mongo
+``` 
+
+2. Uruchom Server Eureka:
+
+```
+ docker run -p 8761:8761 steeltoeoss/eureka-server
+```
+
+Dla przykładu .NET to musi być ten konkretny obraz.
+
+3. Uruchom aplikację Fraud Verifier:
+
+```
+cd 04-EndToEndTesting/Src/04-01-RestBasedE2E/FraudVerifier/
+dotnet run
+```
+
+4. Uruchom aplikację Loan Orders:
+
+```
+cd 04-EndToEndTesting/04-01-RestBasedE2E/LoanOrders/
+dotnet run -c Release
+```
+
+5. Uruchom testy E2E:
+
+```
+cd 04-EndToEndTesting/04-01-RestBasedE2E/E2ETests/
+dotnet test -c Release
+```
+
+**DISCLAIMER**
+
+* Kod jest czysto demonstracyjny i nie stanowi wzorcowego kodu projektowego - zamiast na jak najlepiej napisanym kodzie produkcyjnym koncentrujemy się na przykładach, które pozwalają pokazać wiele sposobów pracy z testami; często celowo dodajemy "produkcyjny" kod, który nie jest poprawnie zaprojektowany po to, żeby pokazać jak sobie z nim radzić i mimo wszystko być w stanie go przetestować oraz przykłady złych testów, których radzimy unikać.
+* Nie polecamy pisania komentarzy po polsku w projektach - tutaj robimy to ponieważ jest to wyłącznie kod szkoleniowy.
