@@ -1,0 +1,13 @@
+{
+  "name": "05-03-02-node-consumer",
+  "version": "1.0.0",
+  "description": "= NodeJS app",
+  "main": "app.js",
+  "dependencies": {
+    "request": "^2.81.0"
+  },
+  "devDependencies": {},
+  "scripts": {},
+  "author": "",
+  "license": "ISC"
+}
