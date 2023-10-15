@@ -1,0 +1,39 @@
+= Testowanie kontraktowe
+
+Moduł 05-03-01 to producent wiadomości w C#, zaś 05-03-02 jego konsument w NodeJS.
+
+Zarówno konsument, jak i producent mogą być napisani w różnych językacj i technologiach.
+
+W tym przypadku technologia użyta do testów kontraktowych to Spring Cloud Contract. Jest to technologia o korzeniach Javowych, ale dzięki możliwości uruchomienia jej w kontenerze dockerowym i pisaniu kontraktów w YAMLu może być z powodzeniem stosowana w innych technologiach. Więcej informacji pod linkiem (który polecam przeczytać): https://docs.spring.io/spring-cloud-contract/docs/current/reference/html/using.html#flows-provider-non-jvm.
+
+Przydatne linki:
+
+* Producent: https://docs.spring.io/spring-cloud-contract/docs/current/reference/html/docker-project.html#docker-how-it-works
+* Konsument: https://docs.spring.io/spring-cloud-contract/docs/current/reference/html/docker-project.html#docker-stubrunner
+
+== 05-03-01-Producer
+
+Zawiera kod producenta. Jedyna istotna zmiana wobec poprzedniego projektu to dodanie kontraktów w folderze `05-03-01-Producer/Contracts`.
+
+== 05-03-02-node-consumer
+
+Konsument napisany w nodejs. 
+
+== Scripts
+
+W katalogu `Scripts/RunContractTests` znajduje się skrypt napisany w C#. Można go uruchomić poleceniem `dotnet run`.
+
+Sekwencja jego działania jest następująca:
+
+=== Część producenta (klasa `ProducerTests`)
+
+** Uruchamia producenta.
+** Uruchamia kontener ze Spring Cloud Contracts, skonfigurowany tak, żeby użył kontraktów zdefiniowanych w `05-03-01-Producer/Contracts` żeby wysłać żądania do producenta i nagrać odpowiedzi.
+** Te nagrane odpowiedzi zapisze następnie w formie zaślepek producenta do katalogu `Scripts/RunContractTests/build/spring-cloud-contract`.
+
+=== Część konsumenta (klasa `ConsumerTests`)
+
+** Uruchamia zaślepki Spring Cloud Contracts na podstawie artefaktów wygenerowanych w lokalnym katalogu docelowym Spring Cloud Contracts (`Scripts/RunContractTests/build/spring-cloud-contract`) jako kontener.
+** Uruchamia dwa testy (dla oszusta i dla osoby uczuciwej) uruchamiające konsumenta, który wyśle żądania do tak uruchomionych zaślepek. Następnie wynik zostaje porównany z wartościami oczekiwanymi w asercjach
+
+W wersji Javowej wiele z uruchamianych komend miało wyciszone wyjście konsolowe, natomiast w wersji C#owej zdecydowałem się je zostawić - co prawda jest większy bałagan na ekranie (tym bardziej, że miejscami więcej niż jeden proces używa konsoli w tym samym czasie), ale potencjalnie mniej obyte z technologiami Javowymi osoby mogą sobie po kolei przeanalizować, co się dzieje.

@@ -1,0 +1,3 @@
+= Testowanie architektury
+
+W module 05-02 mamy też klasę testową do modułu 05-01. Chcąc zaoszczędzić tworzenia kolejnego modułu, dorzuciłem ją do bardziej rozbudowanego.

@@ -1,0 +1,15 @@
+request:
+  method: POST
+  url: /fraud/fraudCheck
+  headers:
+    Content-Type: application/json
+  body:
+    Guid: 89c878e3-38f7-4831-af6c-c3b4a0669022
+    Person:
+      Name: Stefania
+      Surname: Stefanowska
+      DateOfBirth: "2020-01-01"
+      Gender: Female
+      NationalIdentificationNumber: 1234567890
+response:
+  status: 200

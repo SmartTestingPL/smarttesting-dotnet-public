@@ -1,0 +1,33 @@
+﻿= Testy chaosu
+
+== Kod
+
+`CustomerVerifier.cs` z projektu `Core`. Mamy tam kod odpowiedzialny za wyciągnięcie danych z bazy danych. W pierwotnej wersji nie ma w tym kodzie obsługi wyjątków.
+
+`IVerificationRepository.cs` z modułu `WebApplication` otrzymało nową implementację: VerificationRepositoryWatcher, która jest dekoratorem na prawdziwe repozytorium i pozwala zmienić jego zachowanie w locie.
+
+Klasa `Assaults` z `WebApplication`, która zawiera domyślne ustawienia wstrzykiwanych ataków . Będziemy w ramach testów jeszcze dodatkowo ustawiać odpowiednie wartości poprzez API Restowe za pomocą kontrolera `ChaosController`.
+
+Jedyny i najważniejszy test - `SmartTestingApplicationTests.cs` - gdzie uruchamiamy eksperymenty inżynierii chaosu.
+
+== Uruchomienie
+
+Najpierw uruchamiamy infrastrukturę. W folderze w którym znajduje się plik docker-compose.yml wykonujemy:
+
+```
+docker-compose up
+```
+
+Następnie budujemy i uruchamiamy aplikację (UWAGA: aplikacja NIE powinna odpalić się w trybie deweloperskim. Albo w launchSettings.json przy "ASPNETCORE_ENVIRONMENT" powinno znaleźć się coś innego niż "Development", albo można do `dotnet run` dodać opcję `--no-launch-profile` .
+
+```
+cd ./WebApplication/
+dotnet run
+```
+
+Teraz możemy uruchomić test. Oba testy się wywalą.
+
+* `ShouldReturn401Within500MsWhenCallingFraudCheckWithDatabaseIssues` - dostaniemy `INTERNAL_SERVER_ERROR` i status `500`, ponieważ poleci nam wyjątek z kodu bazodanowego, którego nie obsługujemy.
+* `ShouldReturn401Within500MsWhenCallingFraudCheckWithIntroducedLatency` - opóźnienie wynosi co najmniej sekundę więc po 500 ms poleci `ReadTimeout`
+
+Następnie należy zakomentować kod w `CustomerVerifier` odpowiedzialny za połączenie z bazą danych i odkomentowanie tego, który dodaje obsługę błędów. Po przebudowaniu kodu, uruchomieniu aplikacji i uruchomieniu ponownym testów, jeden test przejdzie, a drugi, z oczywistych względów się wywali.
