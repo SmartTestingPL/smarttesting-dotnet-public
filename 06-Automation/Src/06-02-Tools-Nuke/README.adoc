@@ -1,0 +1,6 @@
+= Narzędzie Nuke
+
+"Skrypt" jest podprojektem o nazwie `build` w slnie z kodem produkcyjnym, dostępnym w folderze `06-02-Tools-Nuke`. Projekt `build` domyślnie jest pomijany podczas budowanie slna. Żeby go uruchomić, należy wejść do folderu z slnem i wykonać jeden ze skryptów `build.*` (np. dla Windowsa: `powershell.exe -ExecutionPolicy Unrestricted ./build.ps1`). Inną możliwością jest zainstalowanie narzędzia nuke (np. `dotnet tool update --global Nuke.GlobalTool --version 7.0.2`) i wykonanie komendy `nuke` bądź w folderze w którym jest sln, bądź w dowolnym podfolderze.
+
+Uwaga: żeby dodać wsparcie dla Nuke'a w istniejącym slnie, należy wykonać polecenia podane na stronie: 
+https://nuke.build/docs/getting-started/setup.html (w tym przykładzie zostało to już zrobione).

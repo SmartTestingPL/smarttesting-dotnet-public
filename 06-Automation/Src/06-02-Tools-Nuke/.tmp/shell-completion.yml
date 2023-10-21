@@ -1,0 +1,41 @@
+Configuration:
+- Debug
+- Release
+Continue: 
+Help: 
+Host:
+- AppVeyor
+- AzurePipelines
+- Bamboo
+- Bitrise
+- GitHubActions
+- GitLab
+- Jenkins
+- Rider
+- SpaceAutomation
+- TeamCity
+- Terminal
+- TravisCI
+- VisualStudio
+- VSCode
+NoLogo: 
+Plan: 
+Profile: 
+Root: 
+Skip:
+- Clean
+- Compile
+- Default
+- Restore
+- Test
+Target:
+- Clean
+- Compile
+- Default
+- Restore
+- Test
+Verbosity:
+- Minimal
+- Normal
+- Quiet
+- Verbose

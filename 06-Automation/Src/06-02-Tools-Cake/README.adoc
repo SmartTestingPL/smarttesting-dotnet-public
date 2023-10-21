@@ -1,0 +1,3 @@
+= Narzędzie Cake
+
+Skrypt Cake jest w pliku `06-02-Tools-Cake\Build\build.cake`. Żeby go uruchomić, należy najpierw zainstalować narzędzie Cake (np. `dotnet tool update --global Cake.Tool --version 3.1.0` żeby zainstalować je jako narzędzie globalne - co np. na serwerze buildowym może nie przejść, ale na lokalnym PC powinno wystarczyć). Następnie należy uruchomić skrypt wchodząc do folderu z plikiem .cake i wykonując polecenie `dotnet cake`.

@@ -1,0 +1,19 @@
+= Automatyzacja Projektu i Metryki Jakości
+
+== Automatyzacja Projektu
+
+W lekcji 06-02 pokazujemy narzędzia do testowania skryptów (Pester) / automatyzacji budowania aplikacji (Cake / Nuke / Bullseye). 
+
+$$.$$Net ma rozbudowane natywne narzędzia do budowania - pliki .csproj i sln są rozumiane przez Visual Studio (który potrafi je generować i nimi w pewnym zakresie zarządzać) oraz przez MsBuilda, który potrafi je wykonywać do zbudowania aplikacji. od .Net Core doszła jeszcze jedna warstwa abstrakcji - narzędzie dotnet.exe. W zasadzie jeśli potrzebujemy tylko napisać napisać skrypt, który zbuduje aplikację, uruchomi testy i opublikuje pliki binarne (np. w postaci pakietu nuget), to wystarczy nam do tego prosty plik wsadowy zawierający kilka wywołań dotnet.exe z różnymi opcjami. Czy w takim razie .NET potrzebuje zewnętrznego narzędzia na podobieństwo make'a?
+
+Otóż czasami tak - np. kiedy chcemy skoordynować budowanie wielu slnów, bądź np. wykonać dodatkowe akcje, bądź uruchomić dodatkowe narzędzia oprócz samego budowania, czy też zbudować naszą aplikację na kilka różnych sposobów. Może się wtedy okazać, że prosty skrypt wsadowy nie wystarczy i że przyda nam się narzędzie które potrafi wykonać różne cele i ich zależności. Takimi narzędziami są prezentowane tutaj: Cake, Nuke i Bullseye. Wszystkie trzy pozwalają pisać skrypty buildowe używając płynnych interfejsów w języku C#. 
+
+* Cake - najstarsze z prezentowanych narzędzi. Ma najwięcej wtyczek i dodatków, ale też jeden spory problem - skrypty Cake'owe to nie prawdziwy C# tylko skryptowy dialekt, dla którego Visual Studio nie wspiera intellisense'a, debugowania i innych zaawansowanych możliwości dostępnych normalnie w programach C#. Od jakiegoś czasu, na skutek projektu Frosting, dostępna jest możliwość uruchamiania zadań Cake'owych w ramach zwykłej aplikacji konsolowej. Przykład zamieszczony tutaj używa jednak "tradycyjnej" metody pisania i uruchamiania skryptów Cake'owych (tak naprawdę pół-tradycyjnej, bo kiedyś robiło się to jeszcze trochę inaczej). Żeby edytować skrypt, należy otworzyć w edytorze tekstu plik `06-02-Tools-Cake\Build\build.cake`.
+* Nuke - młodsze narzędzie, nastawione bardzo mocno na integrację z IDE - co przez długi czas było słabością Cake'a. Nie ma aż tylu dodatków, ale jest bardzo obiecujące i ma wtyczki do Visual Studio i Resharpera, umożliwiające odpalanie celów z poziomu IDE. Skrypt Nuke'a jest osadzony w projekcie, który z kolei jest dodawany do naszego slna. Specjalne ustawienie powoduje jednak, że ten Nuke'owy projekt wyłączony jest spoza rutynowej kompilacji i trzeba go budować i uruchamiać osobno. Jest to celowy zabieg twórców, by uniknąć błędów podczas budowania całego slna. Aby edytować skrypt, należy otworzyć w IDE slna z kodem produkcyjnym (w folderze `06-02-Tools-Nuke` i wejść do projektu `build`).
+* Bullseye - tak naprawdę powinienem napisać "Bullseye + SimpleExec". Dwie malutkie biblioteczki. Bullseye daje prosty płynny interfejs do definiowania celów i zależności, a SimpleExec upraszcza składnię uruchamiania procesów zewnętrznych (np. poleceń konsolowych). Kod używający tych narzędzi można osadzić z zwykłej aplikacji konsolowej, którą można uruchomić przez `dotnet run`. To daje możliwość użycia wszelkich narzędzi zwiększających produktywność (np. Roslyn, Resharper) dostępnych dla programistów .NET. Bullseye + SimpleExec to od jakiegoś czasu moja domyślna opcja, jeśli nie potrzebuję niczego zaawansowanego. Żeby edytować skrypt, należy otworzyć `06-02-Tools-Bullseye\BuildScript\BuildScript.sln`.
+
+Pester z kolei jest narzędziem do testowania kodu Powershell. Oprócz definiowania i odpalania testów, umożliwia także definiowanie prostych zaślepek dla funkcji.
+
+== Metryki jakości
+
+Uruchamiamy SonarQube jako projekt, który wygeneruje nam raport z metrykami jakości. Dokładniejszy plik README znajduje się w podfolderze `06-03-Sonarqube`
