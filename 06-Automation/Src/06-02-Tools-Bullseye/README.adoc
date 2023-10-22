@@ -1,0 +1,7 @@
+﻿= Budowanie przez zwykłą aplikację konsolową za pomocą tandemu Bullseye + SimpleExec
+
+"Skrypt" jest zwykłą aplikacją konsolową - żeby go uruchomić, wystarczy wejść do folderu `BuildScript` i wykonać `dotnet run`, ew. `dotnet run -c Release` żeby uruchomić aplikację w trybie Release.
+
+O ile może się to wydawać dziwne, że budujemy skrypt budujący, o tyle `dotnet.exe` czyni ten proces na tyle trywialnym, że osobiście nie mam z tym żadnych problemów.
+
+To, o czym warto pamiętać, pisząc skrypt w aplikacji konsolowej, to że jej domyślnym folderem jest miejsce, gdzie po zbudowaniu ląduje binarka, a nie miejsce, gdzie jest plik z kodem.

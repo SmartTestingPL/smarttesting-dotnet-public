@@ -1,0 +1,28 @@
+﻿= Sonarqube - analiza statyczna
+
+1. Instalujemy narzędzie dotnetowe do interakcji z SonarQube:
++
+----
+dotnet tool update --global dotnet-sonarscanner --version 5.13.1
+----
+
+1. Uruchamiamy plik docker compose (z folderu `06-03-Sonarqube`), który ściągnie i postawi lokalnie serwer SonarQube (uwaga - domyślnie kontener używa bazy danych w pamięci, więc po jego zatrzymaniu wszystkie nasze skany zostaną skasowane!):
++
+----
+docker-compose up
+----
+
+1. Następnie wchodzimy w przeglądarce na adres localhost:9000, logujemy się (mi zadziałał login i hasło "admin", "admin"), po czym w portalu klikamy na naszego awatara i generujemy token wg procedury ze strony https://docs.sonarqube.org/latest/user-guide/user-token/. (token będzie nam potrzebny w następnych krokach)
+
+1. W folderze `06-03-Sonarqube` w którym znajduje się sln, wykonujemy po kolei polecenia:
++
+----
+dotnet sonarscanner begin -k:"smarttesting" -d:sonar.host.url=http://localhost:9000  -d:sonar.cs.opencover.reportsPaths="UnitTests\coverage.opencover.xml" /d:sonar.coverage.exclusions="**Tests*.cs" /d:sonar.login="__________NASZ_TOKEN_______"
+
+dotnet build
+
+dotnet test -p:CollectCoverage=true -p:CoverletOutputFormat=opencover
+
+dotnet sonarscanner end /d:sonar.login="__________NASZ_TOKEN_______"
+----
+1. Zgodnie z sugestią którą wypisuje to ostatnie polecenie, po zakończonym procesie otwieramy przeglądarkę pod adresem http://localhost:9000/dashboard?id=smarttesting i naszym oczom powinien ukazać się raport ze skanu, którego przed chwilą dokonaliśmy.

@@ -1,0 +1,23 @@
+= Testowanie Skryptów z Frameworkiem Pester [06-02]
+
+Skrypty uruchamiające testy funkcji powershellowych używają C#'owej biblioteki Bullseye. Żeby je uruchomić, należy wejść do folderu `06-02-Tools-Pester/BuildScript` i wykonać polecenie 
+
+```bash
+dotnet run
+```
+
+żeby uruchomić testy Pester / PSScriptAnalyzer / prymitywne generowanie dokumentacji za pomocą polecenia Get-Help, bądź uruchomić pojedynczy cel, np.
+
+```bash
+dotnet run -- run-pester
+```
+
+== Kod
+
+Plik `tools/BuildHelper.ps1` to skrypt powershellowy pomagający przy buildzie. Skrypt potrafi dociągnąć potrzebne narzędzia.
+
+W katalogu `src` mamy skrypt powershellowy, który chcemy przetestować.
+
+W katalogu `test` mamy skrypt Pester z testami.
+
+Po wykonaniu skryptu buildowego Bullseye, dokumentację skryptu powershell znajdziesz w folderze `06-02-Tools-Pester\BuildScript\doc\`

@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildScript", "BuildScript\BuildScript.csproj", "{07DBF838-CCAC-4214-87E4-556DD3DB2364}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7A2956B6-45C1-4D6B-9F43-DDE579CED861}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\.editorconfig = ..\..\..\.editorconfig
+		README.adoc = README.adoc
+		..\README.adoc = ..\README.adoc
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07DBF838-CCAC-4214-87E4-556DD3DB2364}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07DBF838-CCAC-4214-87E4-556DD3DB2364}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07DBF838-CCAC-4214-87E4-556DD3DB2364}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07DBF838-CCAC-4214-87E4-556DD3DB2364}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA69F50F-8C21-4C99-AC57-71D0F27CE5A9}
+	EndGlobalSection
+EndGlobal
