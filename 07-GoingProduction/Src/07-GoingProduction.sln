@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30320.27
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FraudVerifier", "FraudVerifier\FraudVerifier.csproj", "{87F08366-86E4-41C1-89C6-7BAF6BCE292B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoanOrders", "LoanOrders\LoanOrders.csproj", "{850E46D7-82A8-4314-9971-DABF85A6E3BD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{37BCB8EF-DEDE-42BD-9871-A8440D4FD58C}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.editorconfig = ..\..\.editorconfig
+		loanOrder.json = loanOrder.json
+		README.adoc = README.adoc
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FraudVerifierTests", "FraudVerifierTests\FraudVerifierTests.csproj", "{52290639-B9CF-4B09-A0E2-C6E00FDCF6FD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoanOrdersTests", "LoanOrdersTests\LoanOrdersTests.csproj", "{BDB536EF-DABE-4EC1-B932-514289966341}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "E2ETests", "E2ETests\E2ETests.csproj", "{6A631B99-879A-4400-8410-5099B0949D42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87F08366-86E4-41C1-89C6-7BAF6BCE292B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87F08366-86E4-41C1-89C6-7BAF6BCE292B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87F08366-86E4-41C1-89C6-7BAF6BCE292B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87F08366-86E4-41C1-89C6-7BAF6BCE292B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{850E46D7-82A8-4314-9971-DABF85A6E3BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{850E46D7-82A8-4314-9971-DABF85A6E3BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{850E46D7-82A8-4314-9971-DABF85A6E3BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{850E46D7-82A8-4314-9971-DABF85A6E3BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52290639-B9CF-4B09-A0E2-C6E00FDCF6FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52290639-B9CF-4B09-A0E2-C6E00FDCF6FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52290639-B9CF-4B09-A0E2-C6E00FDCF6FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52290639-B9CF-4B09-A0E2-C6E00FDCF6FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDB536EF-DABE-4EC1-B932-514289966341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDB536EF-DABE-4EC1-B932-514289966341}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDB536EF-DABE-4EC1-B932-514289966341}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDB536EF-DABE-4EC1-B932-514289966341}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A631B99-879A-4400-8410-5099B0949D42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A631B99-879A-4400-8410-5099B0949D42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A631B99-879A-4400-8410-5099B0949D42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A631B99-879A-4400-8410-5099B0949D42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D15AC6EA-516F-4E87-86C8-332EF275CEC6}
+	EndGlobalSection
+EndGlobal
