@@ -1,0 +1,13 @@
+{
+  "Customer": {
+    "Guid": "33d2f13c-6d96-4883-9871-1e158ced00f2",
+    "Person": {
+      "Name": "Anna",
+      "Surname": "Kowalska",
+      "NationalIdentificationNumber": "86110302148",
+      "Gender": "Female",
+      "DateOfBirth": "1986-11-03"
+    }
+  },
+  "Amount": 2000
+}

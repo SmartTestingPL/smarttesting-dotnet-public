@@ -1,0 +1,189 @@
+Tematy omawiane w tej części:
+
+* Monitoring
+- zobacz: _Demo użycia Metryk_
+* Testy w procesie CI/CD
+* Testy regresji
+* Testowanie na produkcji
+* Wydania vs. wdrożenia
+- zobacz: _Demo Feature Toggles_
+
+**Uruchamianie aplikacji i testów**
+
+Sln składa się z 5 projektów:
+
+* 2 "aplikacji biznesowych": 
+  - LoadOrders - służy do składania wniosków o udzielenie pożyczki
+  - FraudVerifier - służy do weryfikacji klientów
+* Dwóch projektów testowych do tych aplikacji.
+* E2ETests - projektu zawierającego pojedynczy test E2E do uruchamienia względem już działającego systemu.
+
+1) Uruchom MongoDB, np. przy użyciu dockera:
+
+```
+docker run -p 27017:27017 mongo
+``` 
+
+2) Uruchom Server Eureka:
+
+```
+docker run -p 8761:8761 steeltoeoss/eureka-server
+```
+
+Dla przykładu .NET to musi być ten konkretny obraz.
+
+3) Uruchom Unleash z zapleczem w postaci PostgreSQL:
+
+```
+git clone https://github.com/Unleash/unleash-docker
+cd ./unleash-docker
+git reset --hard 0a076d289a680a8f43f13282325158677c54d4c0
+docker-compose up
+```
+
+4) Uruchom aplikację Fraud Verifier:
+
+```
+cd 07-GoingProduction/Src/FraudVerifier/
+dotnet run -c Release
+```
+
+5) Uruchom aplikację Loan Orders:
+
+```
+cd 07-GoingProduction\Src\LoanOrders\
+dotnet run -c Release
+```
+
+**Demo Feature Toggles**
+
+1) Uruchom zapytanie 
+
+```
+cd 07-GoingProduction\Src\
+powershell Invoke-RestMethod 'http://localhost:9091/orders' -Method 'POST' -ContentType "application/json" -Body (Get-Content ./loanOrder.json)
+``` 
+
+żeby utworzyć nowe zamówienie pożyczki
+
+2) Użyj zwróconego Guida żeby zweryfikować status zamówienia: 
+
+```
+powershell Invoke-RestMethod 'http://localhost:9091/orders/{returnedId}' -Method 'GET'
+```
+
+status będzie miał wartość `Verified`.
+
+3) W przeglądarce, uruchom konsolę Unleash (`localhost:4242`, podaj użytkownika i hasło ze strony https://github.com/Unleash/unleash-docker), po czym utwórz nowy przełącznik o nazwie "NewVerification" i upewnij się, że jest aktywny oraz włączony.
+
+4) Uruchom ponownie zapytanie 
+
+```
+powershell Invoke-RestMethod 'http://localhost:9091/orders' -Method 'POST' -ContentType "application/json" -Body (Get-Content ./loanOrder.json)
+``` 
+
+żeby utworzyć nowe zamówienie pożyczki.
+
+5) Użyj zwróconego UUID żeby zweryfikować status zamówienia: 
+
+```
+powershell Invoke-RestMethod 'http://localhost:9091/orders/{returnedId}' -Method 'GET'
+```
+
+- status będzie miał wartość `REJECTED`.
+
+TIP: użycie przełącznika można sprawdzić w projekcie `FraudVerifier`, w klasie  `CustomerVerifier`, a konfigurację w Startup.cs appsettings.json.
+
+WARNING: Na potrzeby demo dostęp do strony Unleash nie jest chroniony, podczas gdy na produkcji zazwyczaj taki dostęp będziemy chcieli nadać wyłącznie osobom z uprawnieniami administratora.
+
+**Demo Distributed Tracing**
+
+Dzięki wykorzystaniu biblioteki do instrumentacji śledzenia rozproszonego (w przypadku projektu w C# jest to `OpenTelemetry`), nasze usługi śledzą żądania zarówno przychodzące (instrumentacja ASP.Net Core), jak i wychodzące (instrumentacja HttpClienta) i potrafią je korelować za pomocą identyfikatorów aktywności.
+
+Również logi wzbogacane są o nowe własności (na potrzeby przykłady została skonfigurowana biblioteka do logowania Serilog, żeby te własności wyświetlać - zerknij w pliki `Program.cs` w obu usługach): `SpanId`, `TraceId` oraz `ParentId`. `TraceId` to identyfikator wykonywanej operacji, taki sam dla wszystkich usług, przez które musimy przejść, żeby zrealizować operację). `SpanId` to odcinek tej operacji realizowany w konkretnej usłudze. `ParentId` to `SpanId` operacji nadrzędnej, w ramach której aktualny zakres ("span") został uruchomiony.
+
+1) Przejrzyj logi aplikacji `FraudVerifier`. Zobaczysz tam opisane wyżej własności, np. `"SpanId": "3b9b8490bd48d64f", "TraceId": "5879d6b462fe3d4eb12421a6251753b2", "ParentId": "68d8a0987270ed4b"`
+
+2) Przejdź do logów aplikacji `LoanOrders`. Zaobserwuj, że dla logów tej samej operacji, `SpanId` (w tym przykładzie `3b9b8490bd48d64f`) będzie takie samo.
+
+TIP: Dzięki zastosowaniu biblioteki do instrumentacji śledzenia rozproszonego, jesteśmy w stanie skorelować logi odpowiadające tej samej operacji we wszystkich usługach wchodzących w skład naszego systemu.
+Dobrym pomysłem jest też wykorzystanie dedykowanych narzędzi (np., https://www.elastic.co/kibana[Kibana]), które pozwalają w łatwy sposób analizować takie logi.
+Skorelowane w ten sposób logi, możemy też wykorzystać do analizy czasów oczekiwania (latency), korzystając z narzędzi takich jak https://zipkin.io/[Zipkin].
+
+**Demo z Zipkinem**
+Używając Zipkina możesz analizować czasy trwania zapytań i odpowiedzi, i całych operacji w systemie.
+
+1) Uruchom Zipkina:
+```
+docker run -d -p 9411:9411 openzipkin/zipkin
+```
+
+2) Wykonaj trochę zapytań opisanych w sekcji "Demo Feature Toggles"
+
+3) W przeglądarce wejdź na `localhost:9411`. Możesz teraz wyszukiwać spany po `serviceId` (np. `loan-service`), `traceId` i `spanId` i weryfikować jakie operacje były wykonywane w których operacjach, ile trwały, i które z nich powodowały największe opóźnienie.
+
+**Demo użycia metryk**
+
+Ponieważ dodaliśmy do naszych aplikacji integracją ASP.Net core'a z Prometheusem, z miejsca otrzymujemy sporą listę metryk.
+Dodatkowo, w aplikacji  `FraudVerifier` w `CustomerVerifier.cs` utworzyliśmy obiekt typu `Histogram` i użyliśmy go do utworzenia obiektu typu `ITimer` (rejestrującego czas jaki zajmuje wykonanie operacji)`, który wykorzystujemy żeby śledzić czas trwania weryfikacji klienta.
+
+1) Wejdź w przeglądarce pod adres `http://localhost:9092/metrics` żeby przejrzeć listę dostępnych metryk dla aplikacji FraudVerifier, bądź `http://localhost:9091/metrics` dla aplikacji LoanOrders.
+
+2) Dodawaj własne metryki korzystając z klasy `Metrics` z przestrzeni nazw `Prometheus` (z zainstalowanego NuGeta prometheus-net).
+
+**Demo dashboardów do metryk w Grafanie**
+
+Wartości dodanych przez siebie metryk możesz agregować w Prometheusie i tworzyć dla nich dashboardy w Grafanie. Stworzyliśmy do tego celu demo setup do uruchomienia na dockerze.
+
+1) Sklonuj repozytorium z setupem docker-compose:
+
+```
+git clone git@github.com:OlgaMaciaszek/prometheus.git
+```
+
+Bądź, jeśli powyższe nie zadziała, to:
+
+```
+git clone https://github.com/OlgaMaciaszek/prometheus.git
+```
+
+2) Przejdź na gałąź `smarttesting`
+
+```
+cd prometheus
+git checkout smarttesting
+```
+
+3) (Procedura dla Windowsa z dockerem na WSL2. Jeśli używasz opartych na Linuksie, spróbuj dostosować wersję tego kroku z Javowej wersji kodu).
+
+Zmień plik `./prometheus/prometheus.yml`, podmieniając istniejącą tam sekcję `scrape_configs` na nastepującą:
+
+```
+scrape_configs:
+  - job_name: 'apps'
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    static_configs  :
+      - targets: ['host.docker.internal:9091','host.docker.internal:9092']
+```
+
+Zmień plik /prometheus/grafana/provisioning/datasources/datasource.yml:
+
+- pole access zmień z direct na proxy
+- pole url z http://localhost:9090 na http://prometheus:9090
+
+4) Uruchom kontenery (trzeba będzie najpierw zatrzymać unleash, gdyż oba docker compose'y - unleash i prometheus - korzystają z portu 3000):
+
+```
+docker-compose up
+```
+
+5) Wykonaj trochę zapytań opisanych w sekcji "Demo Feature Toggles"
+
+6) W przeglądarce uruchom Prometheusa pod `localhost:9090`. Możesz przeglądać metryki i tworzyć dla nich grafy.
+
+7) W przeglądarce Grafanę pod `localhost:3000` (login i hasło znajdziesz w ww. repozytorium prometheusa, w pliku `./scripts/run.sh`). Na Dashboards->Browse znajdziesz linki do przykładowych dashboardów. "Demo Dashboard" wykorzystuje metrykę, którą dodaliśmy w kodzie, jednak w wersji Javowej. Żeby cokolwiek pokazało się dla naszego przypadku, należy podmienić źródła tych metryk (bądź w samej grafanie edytując grafy, bądź w plikach źródłowych dla grafów w `./grafana/provisioning/dashboards`). W grafie CPU należy zmienić z `system_cpu_usage` na `process_cpu_seconds_total`, natomiast w grafie "Verify Customers" - z `rate(verifyCustomerTimer_seconds_count[5m])` na `rate(verifyCustomerTimer_sum[5m])`.
+
+Niektóre metryki systemowe z naszych aplikacji będą dostępne tylko, kiedy zostaną uruchomione pod Linuksem (WSL2 też powinien zadziałać) - zerknij na opis poszczególnych metryk systemowych pod adresem https://github.com/Daniel15/prometheus-net.SystemMetrics.
+
+Możesz tworzyć dashboardy dla dodanych przez siebie metryk.
