@@ -1,0 +1,12 @@
+﻿= Dokumentacja przez testy [08-03]
+
+== Kod
+
+Przede wszystkim `FraudController` i `_01_FraudControllerTests`.
+W klasie `Doc` mamy prymitywny mechanizm dokumentacji naszego API. Będzie on używał kawałków kodu, które zostaną wygenerowane z testu.
+
+W wersji Javowej tego przykładu zademonstrowane jest narzędzie RestDoc, które na podstawie testów potrafi wygenerować kontrakty do testów kontraktowych, zaślepki do komunikacji po HTTP oraz przykłady wywołań HTTP. Dla .NET Core nie znalazłem podobnej biblioteki, a zatem zaimplementowałem jako przykład prymitywny mechanizm, który zapina się na zdarzenia klienta HTTP, by wygenerować prostą dokumentację przepływu HTTP na podstawie testu. Polecam obejrzenie wersji Javowej, która jest dużo pełniejsza.
+
+Pokazuję najpierw test, weryfikujący nasze API - `ShouldReturnFraud`. Następnie test, generujący dokumentację `ShouldReturnFraudWithHttpDocs`. 
+
+Uruchomienie testów sprawi, że w folderze z binarkami testów (np. `08-03-Docs\WebApplicationTests\bin\Debug\net7.0\`) pojawi się plik o nazwie `fraudCheck.md`, gdzie będzie prosta dokumentacja scenariusza w formacie markdown.

@@ -1,0 +1,48 @@
+﻿= Testy mutacyjne [08-04]
+
+== Kod
+
+Najpierw `_01_AgeVerification` jako implementacja, którą będziemy testować.
+
+Potem `_02_AgeVerificationTests#ShouldThrowExceptionWhenAgeInvalid` oraz `ShouldReturnPositiveVerificationWhenAgeIsWithinTheThreshold` i `ShouldReturnNegativeVerificationWhenAgeIsBelowTheThreshold` oraz `ShouldReturnNegativeVerificationWhenAgeIsAboveTheThreshold`.
+Czyli weryfikujemy
+
+* wiek z przyszłości
+* wiek w ramach przedziału akceptowalnego
+* wiek poniżej przedziału
+* wiek powyżej przedziału
+
+Jak uruchomimy to narzędzie do policzenia pokrycia kodu przez testy, to wyjdzie nam 100% pokrycia kodu. Pytanie jest czy wszystkie ścieżki zostały rzeczywiście pokryte? Zapomnieliśmy o warunkach brzegowych!
+
+Jeśli zainstalujemy narzędzie do testowania mutacyjnego:
+
+```
+dotnet tool update --global dotnet-stryker --version 3.10.0
+```
+
+i uruchomimy je w folderze `08-04-Mutation\UnitTests` poleceniem:
+
+```
+dotnet-stryker
+```
+
+Narzędzie po zakończeniu pokaże zgrubne wyniki i wskaże nam lokalizację raportu, np.
+
+```
+Testing mutant | ██████████ | 14 / 14 | 100 % | ~0m 00s |
+Killed:   12
+Survived: 2
+Timeout:  0
+
+Your html report has been generated at:
+ .....\08-04-Mutation\UnitTests\StrykerOutput\2020-10-13.21-42-07\reports\mutation-report.html
+```
+
+Z raportu możemy wyczytać, że brakuje nam weryfikacji pewnych warunków w naszych testach. Wystarczy zakomentować atrybut `[Ignore()]` na testach w klasie `_02_AgeVerificationTests` i uruchomić narzędzie ponownie, a tym razem wszystkie mutanty powinny zostać zabite:
+
+```
+Testing mutant | ██████████ | 14 / 14 | 100 % | ~0m 00s |
+Killed:   14
+Survived: 0
+Timeout:  0
+```
