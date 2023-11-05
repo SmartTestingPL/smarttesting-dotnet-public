@@ -1,0 +1,34 @@
+﻿= Testowanie kodu wielowątkowego [08-02]
+
+Komentarz Grześka: C# ma bardzo rozwinięte abstrakcje do współbieżnego, równoległego i asynchronicznego przetwarzania (async-await, PLinq, klasa Parallel...) i przy użyciu tych abstrakcji część problemów z tego rozdziału była trudna do pokazania w sposób idiomatyczny, a nie chciałem wracać do "surowych" wątków. Musiałem trochę nakombinować, żeby zreplikować niektóre problemy, przed którymi najpopularniejsze mechanizmy w C# chronią. Stąd nie wszystkie fragmenty tego kodu należy traktować jako przykład dobrego programowania asynchronicznego.
+
+== Kod
+
+=== Testowanie wielowątkowe
+
+W module `08-02-01` - `_01_CustomerVerifier`. Główna klasa biznesowa, do której będziemy mieli sporo przypadków testowych.
+
+Zaczynamy od testów w `_02_CustomerVerifierTests`. Pierwsze testy `ShouldReturnResultsInOrderOfExecution` oraz `ShouldWorkInParallelWithLessConstraint` pokazują jak zapięcie się na konkretne wyniki w konkretnej kolejności, tam gdzie nie ma to sensu, może zepsuć nam testy.
+
+Następnie pokażemy jak weryfikować procesowanie równoległe. Wywołanie metody `_01_CustomerVerifier#VerifyAsync` spowoduje uzyskanie i zapisanie zdarzenia przez komponent `_03_VerificationListener`. Każda z weryfikacji, w osobnym wątku, wyśle zdarzenie, które zostanie odebrane przez `_03_VerificationListener` w różnym czasie.
+
+Odkomentowany test `ShouldWorkInParallelWithoutASleep` w klasie `_02_CustomerVerifierTests` się wywali, ponieważ zakończy się szybciej niż przetwarzanie.
+
+Rozwiązaniem skutecznym, aczkolwiek nieskalującym się i po prostu nienajlepszym, jest umieszczenie oczekiwania przez wątek testu przez X czasu. Przykładem tego jest `_02_CustomerVerifierTests#ShouldWorkInParallelWithASleep`. Zdecydowanie lepszym rozwiązaniem jest odpytywanie komponentu nasłuchującego na zdarzenia co X czasu, maksymalnie przez Y czasu. Przykład `_02_CustomerVerifierTests#ShouldWorkInParallelWithPolly`.
+
+W przypadku przetwarzania wielowątkowego, najlepej jest zawsze próbować testować nasz kod jakby był w jednym wątku. W klasie `_01_CustomerVerifier` metoda `FoundFraud` uruchamiana metodę w komponencie `_04_VerificationNotifier`, która zwraca Task (czyli zadanie), co oznacza, że możemy na to zadanie poczekać tyle, ile jest konieczne by się zakończyło (np. używając `await`). Komponent `_04_VerificationNotifier` moglibyśmy przetestować osobno, jednostkowo, pod warunkiem, że poczekalibyśmy na odpalone zadanie. To, co możemy zrobić z testem klasy `_01_CustomerVerifier` to przetestowanie czy efekt uboczny w postaci wywołania naszego komponentu wykonał się w odpowiednim czasie.
+
+Przykładami takich testów są `_05_AsyncCustomerVerifierTests` oraz `_06_AsyncCustomerWithSpyVerifierTests`. W pierwszym przypadku mamy test, w którym weryfikujemy czy efekt uboczny zostanie wywołany. Nie ma nawet potrzeby uruchamiania tego kodu w osobnym wątku. Jeśli chcemy natomiast przetestować czy potrafimy rzeczywiście uruchomić test w osobnym wątku to w klasie `_06_AsyncCustomerWithSpyVerifierTests` tworzymy sobie sztuczną implementację `FraudAlertNotifier` i w teście musimy zmienić asercję tak, żeby oczekiwać na wykonanie się metody na naszym szpiegu (zwanym też "częściowym mockiem" i tworzonym przy użyciu `Substitute.ForPartsOf<>()`). Innymi słowy tworzymy obiekt `FraudAlertNotifier`, opakowany w proxy biblioteki do mockowania, żeby zweryfikować, czy wywołanie miało miejsce. Nie tworzymy zwykłego mocka, gdyż w takim przypadku, NSubstitute nie będzie wiedział, że metoda `FraudFound()` uruchamia nowy wątek. Patrząc w logi będziemy widzieć, że raz, w osobnym wątku, została zalogowana wiadomość:
+
+```
+info: Core.Verifier.Model._04_VerificationNotifier[0]
+      hello
+```
+
+=== Testowanie wielowątkowe - obsługa błędów
+
+Testowanie wielowątkowe - obsługa błędów. Kod produkcyjny - `_01_CustomerVerifier#Verify` oraz `_07_ExceptionThrowingVerification`. W teście `ExceptionCustomerVerifierTests` pokazujemy jak wyjątek rzucony w osobnym wątku wpływa na nasz główny wątek i jak możemy temu zaradzić.
+
+=== Testowanie wielowątkowe - programowanie reaktywne
+
+Implementacja - `_01_CustomerVerifier#VerifyRx` oraz `_01_CustomerVerifier#verifyParallelRx`. Testy znajdują się w klasie `_08_ReactorCustomerVerifierTests`.

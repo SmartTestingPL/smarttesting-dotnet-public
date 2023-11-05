@@ -1,0 +1,15 @@
+﻿= Testowanie wyjątków [08-01]
+
+== Kod
+
+Przykład weryfikacji po nazwisku `_01_NameVerification.cs`, który loguje na konsoli informacje o kliencie.
+
+W `_02_NameVerificationTests.cs` znajdują się testy weryfikujące na różne sposoby rzucany wyjątek. Zaczynamy od najbardziej generycznego testu, który łapie `NullReferenceException` - `ShouldThrowAnExceptionWhenCheckingVerification`. Test przechodzi przez przypadek. `NRE` leci, gdyż w klasie `Person` ktoś zapomniał przypisać pole `_gender`. `NRE` leci z wywołania `GetGender()` na osobie (trochę inaczej niż w wersji Javowej, patrz komentarz w kodzie przy metodzie `GetGender()`).
+
+Możemy weryfikować wiadomość przy rzconym wyjątku tak jak w przypadku testu `ShouldThrowAnExceptionWhenCheckingVerificationOnly`.
+
+Zakładając, że z jakiegoś powodu dziedzinowego nasza klasa weryfikacyjna nie może obsłużyć błędnych sytuacji i musi rzucić wyjątek, to ten wyjątek powinien być wyjątkiem związanym z cyklem życia naszej aplikacji. Przypuśćmy, że tworzymy sobie wyjątek `_04_VerificationException`, który jako wyjątek dziedzinowy (`_03_DomainException`) może zostać obsłużony gdzieś w innej części naszej aplikacji.
+
+Nasza klasa weryfikująca mogłaby wówczas wyglądać tak jak `_05_NameWithCustomExceptionVerification`.
+
+Test wtedy mógłby dokonywać asercji na podstawie rzuconego wyjątku tak jak w `ShouldFailVerificationWhenNameIsInvalid` bądź `ShouldFailVerificationWhenNameIsInvalidAndAssertionIsDoneManually`, jeśli nie mamy dostępu do bibliotek do wykonywania takich asercji.
