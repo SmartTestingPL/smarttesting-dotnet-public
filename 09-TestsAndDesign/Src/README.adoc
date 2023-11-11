@@ -1,0 +1,75 @@
+= Testy A Design Aplikacji
+
+== Zacznijmy od testu! [01]
+
+=== Kod w [WebApplication.csproj i WebApplicationTests.csproj]
+
+Na slajdzie [Brak przyjemności z testowania] mamy kod z
+`05-Architecture/Src/05-02-Packages/CoreTests/Lesson1/_01_BadClassTests.cs` z metody testowej `ShouldUseALotOfMocks`.
+
+Najpierw kodujemy w `_01_AcceptanceTests.cs`. Na slajdach będziemy przechodzić linia po linii włącznie z niekompilującym się kodem.
+
+Następnie kod, gdzie tworzymy kontroler, który nic nie robi jest dostępny tu `_02_AcceptanceControllerTests.cs`. W tym momencie tworzymy prostą implementację kontrolera, który zwraca `null`.
+
+Potem w `_03_AcceptanceControllerSomethingTests.cs` tworzymy klasę `Coś`, która jeszcze nie do końca wiemy, co będzie robiła.
+
+Po tym, jak rozpiszemy sobie co mamy zrobić z naszym klientem, dochodzimy do wniosku, że chcemy zweryfikować oszusta. Zatem tworzymy klasę `FraudVerifier` - `_04_FraudVerifierFailingTests.cs`, która jeszcze nie ma implementacji.
+
+W `_05_FraudVerifierTests.cs` zapisujemy przypadki testowe dla naszej implementacji weryfikacji oszusta. Najpierw chcemy żeby jeden test przeszedł, a potem drugi.
+
+W końcu możemy puścić suitę testów akceptacyjnych `_06_AcceptanceTests.cs`, które na szczęście przejdą.
+
+== Piramida testów [02]
+
+=== Kod [09-02-Pyramid]
+
+Kod do slajdu dot. tego, czy piramida testów jest zawsze taka sama `PyramidTests.cs`. Pokazujemy tu symulacje kontrolera, który przekazuje wywołania do klasy łączącej się z bazą danych.
+
+== Przykłady złych testów [03]
+
+* Brak asercji - Klasa `_01_NoAssertionsTests.cs` i zawsze przechodzący test. Pokazujemy problem z ukrywaniem asercji w metodach pomocniczych - czasami metoda jest utworzona, a asercji brakuje.
+* Za dużo mocków - Klasa `_02_DoesNSubstituteWorkTests.cs` i operowanie tylko na mockach. De facto nie testujemy nic, poza tym, że framework do mockowania działa.
+* Mockowanie wywołań statycznych - Klasa `AppTests` w module `09-03-BadTests` zawiera klasę `_03_FraudService`, gdzie wykorzystujemy dwie "utility classes" ze statycznymi metodami. Jedna to `StringUtils` pochodząca (wersji Javowej pochodząca z biblioteki - w C# udajemy, że jest tak samo), druga to nasz własny `DatabaseAccessor`. W teście `ShouldFindAnyEmptyName` mockujemy wszystko co się da i w pierwszej kolejności próbujemy ogarnąć mockowanie metody narzędziowej.
+* Mockowanie wywołań statycznych c.d. -  Klasa `AppTest` i tym razem bierzemy się za `DatabaseAccessor`. Wiemy już, że raczej nie powinniśmy mockować tego wywołania. Test `ShouldDoSomeWorkInDatabaseWhenEmptyStringFound` pokazuje jak to zrobić odpowiednio.
+* Stanowość - Klasa `_04_PotentialFraudServiceTests` pokazuje problemy związane ze stanowością w testach.
+* Złe ustawienie wtyczek do testów - moduł `09-03-BadPlugin` klasa `FraudVerifierTst`. W wersji Javowej - Z IDE się wywali, z linii komend nie. W wersji .NET nie znalazłem możliwości zrobienia podobnego błędu - patrz komentarze w kodzie.
+
+== Praca z zastanym kodem
+
+=== Kod [09-04-legacy]
+
+Klasa `_01_FraudVerifier` widoczna na slajdzie po [Cel pracy ze źle zaprojektowanym kodem].
+
+W pliku `_02_FraudVerifierTests` mamy klasę `_03_DatabaseAccessorImpl`. Na jej podstawie powstał kod na slajdzie po screenshocie 4 000 linii kodu.
+
+Następnie próba napisania testu `ShouldMarkClientWithDebtAsFraud`.
+
+Czas na szew (seam) - `_04_FakeDatabaseAccessor`. Nadpisujemy problematyczną metodę bez zmiany kodu produkcyjnego i test `ShouldMarkClientWithDebtAsFraudWithSeam`.
+
+Teraz chcemy dodać nową funkcję systemu do klasy `_05_FraudTaxPenaltyCalculatorImpl`.
+
+Pierwsze podejście z `if/else` w `_06_FraudTaxPenaltyCalculatorImplIfElse`. Problem w tym, że dodajemy nowy kod do nieprzetestowanego.
+
+Wprowadzamy pojęcie Klasy Kiełkowania (Sprout). Czyli za pomocą TDD piszemy nową, przetestowaną klasę, który wywołamy w naszym kodzie legacy (`_07_FraudTaxPenaltyCalculatorImplSprout`). Process TDD widoczny tu `_08_SpecialTaxCalculatorTests`.
+
+Załóżmy, że mamy klasę, która wylicza czy dana osoba jest oszustem lub nie, w zależności od tego, czy posiada dług. By wyciągnąć te informacje, musimy odpytać bazę danych. Akcesor do bazy danych tworzony jest w konstruktorze. Załóżmy, że mamy taką implementację weryfikatora oszustów `_09_FraudVerifierLogicInConstructor` i taką dostępu do bazy danych `_10_DatabaseAccessorImplWithLogicInTheConstructor`. Pierwszą rzeczą, którą możemy zrobić to spróbować w ogóle utworzyć nasz obiekt. Napiszmy test `_02_FraudVerifierTests.ShouldCreateAnInstanceOfFraudVerifier`. Test wybuchnie! Co możemy zrobić?
+
+W `_11_FraudVerifierLogicInConstructorExtractLogic` widzimy, że możemy dodać drugi konstruktor obok istniejącego, żeby nie tworzyć problematycznego obiektu w konstruktorze, tylko przekazać już otworzony obiekt przez konstruktor. Teraz, możemy utworzyc mocka problematycznego obiektu i napisać test `_02_FraudVerifierTests.ShouldMarkClientWithDebtAsFraudWithAMock`.
+
+Teraz możemy wprowadzić nowy interfejs `_12_DatabaseAccessor`,  który pokrywa się z już istniejącym kodem. Podmieniamy w konstruktorze `FraudVerifier`a klasę na interfejs (`_13_FraudVerifierWithInterface`). Dzięki temu możemy też stworzyć sztuczną implementację interfejsu `_14_FakeDatabaseAccessorWithInterface`.
+
+Poprzez taką operację jesteśmy w stanie bardzo uprościć nasz test `_02_FraudVerifierTests.ShouldMarkClientWithDebtAsFraudWithAnExtractedInterface`.
+
+==== Obiektu nie da się łatwo utworzyć
+
+Klasa `_15_FraudVerifierTests`. Zawiera implementację `_16_FraudVerifier` jako przykład implementacji z wieloma zależnościami i dużą liczbą linijek kodu.
+
+Pokazujemy dwa przykłady testów, w których próbujemy odgadnąć, które zależności są wymagane poprzez podstawienie nulla. `_15_FraudVerifierTests.ShouldCalculatePenaltyWhenFraudAppliesForALoan` nie trafiamy i leci `NullReferenceException`. W `_15_FraudVerifierTests.ShouldMarkClientWithDebtAsFraud` trafiamy i test nam przechodzi. W teście `_15_FraudVerifierTests.ShouldMarkClientWithDebtAsFraud` przekazujemy brakującą zależność i test przechodzi.
+
+==== Globalne zależności
+
+Klasa `_17_FraudVerifierTests`. W klasie `_18_FraudVerifier` mamy przykład implementacji wołającej singleton `DatabaseAccessorImpl`. Przykład implementacji widać tu `_19_DatabaseAccessorImpl`.
+
+To, co możemy zrobić to dodać statyczny setter do implementacji singletona, pozwalający na nadpisanie globalnej instancji, instancją testową. Przykład `_20_DatabaseAccessorImplWithSetter`. Instancja testowa może wyglądać tak jak `_21_FakeDatabaseAccessor`.
+
+Po każdym teście warto po sobie wyczyścić czyli zresetować wartość do tej produkcyjnej. (`[TearDown]` w teście).
